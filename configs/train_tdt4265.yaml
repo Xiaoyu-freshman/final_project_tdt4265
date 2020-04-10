@@ -1,0 +1,22 @@
+MODEL:
+    NUM_CLASSES: 5
+    BACKBONE:
+        NAME: 'resnet'
+        PRETRAINED: False
+        AFTER_TRAINED: True
+        OUT_CHANNELS: [512,1024,2048,512, 256, 128]
+        INPUT_CHANNELS: 3
+        DEPTH: 50
+INPUT:
+    IMAGE_SIZE: 300
+DATASETS:
+    TRAIN: ("tdt4265_train",)
+    TEST: ("tdt4265_val", )
+SOLVER:
+    MAX_ITER: 106000
+    LR_STEPS: [70000, 88000]
+    GAMMA: 0.1
+    BATCH_SIZE: 32
+    LR: 1e-4
+OUTPUT_DIR: 'outputs/resnet50_tdt4265_test7'
+DATASET_DIR: "datasets"
