@@ -1,4 +1,5 @@
 from torchvision.models.resnet import BasicBlock,Bottleneck
+from dropblock import DropBlock2D, LinearScheduler #Try to use the dropblock lib
 import torch
 import torch.nn as nn
 import math
@@ -10,6 +11,16 @@ class ResNet(nn.Module):
                                bias=False) #150*150
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
+        #----------new structure called DropBlock 11sr April-------------------------
+        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+            drop_prob=0.
+            block_size=5
+            self.dropblock = LinearScheduler(
+                DropBlock2D(drop_prob=drop_prob, block_size=block_size),
+                start_value=0.,
+                stop_value=drop_prob,
+                nr_steps=5
+            )
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1) #75*75
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2) #38*38
@@ -78,21 +89,28 @@ class ResNet(nn.Module):
         layers.append(torch.nn.Conv2d(in_channels=input_channels, out_channels=output_channels,kernel_size=3,stride=1,padding=1))
         layers.append(nn.ReLU(inplace=True))
         layers.append(nn.BatchNorm2d(output_channels))
+        layers.append(nn.Dropout(0.5))
         layers.append(torch.nn.Conv2d(in_channels=output_channels, out_channels=output_channels,kernel_size=3,stride=2,padding=p)) 
         layers.append(nn.ReLU(inplace=True))
         layers.append(nn.BatchNorm2d(output_channels))
         return nn.Sequential(*layers)
     
     def forward(self, x):
+        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+            self.dropblock.step()  # increment number of iterations
         out_features = []
+        #print('x',x.shape)
         x = self.conv1(x) #150*150
         #print('x_shape',x.shape)
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x) #75*75
+        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+            x = self.dropblock(self.layer1(x))#added 11st April
+        x = self.layer1(x)  
         #print('x_shape',x.shape)
-        x = self.layer1(x) 
-        #print('x_shape',x.shape)
+        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+            x = self.dropblock(self.layer2(x))
         x = self.layer2(x)  #38*38 output[0]
         #print('x_shape',x.shape)
         out_features.append(x)
