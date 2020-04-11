@@ -1,0 +1,22 @@
+MODEL:
+    NUM_CLASSES: 5
+    BACKBONE:
+        NAME: 'resnet'   #vgg   #'basic'
+        PRETRAINED: True
+        OUT_CHANNELS: [512,1024,2048,512, 256, 128]    #[128, 256, 512, 512, 256, 128]
+        INPUT_CHANNELS: 3
+        DEPTH: 50
+INPUT:
+    IMAGE_SIZE: 300
+DATASETS:
+    TRAIN: ("waymo_train",)
+    TEST: ("waymo_val", )
+SOLVER:
+    CHOICE: 'Adam'
+    MAX_ITER: 65000
+    LR_STEPS: [40000, 55000]
+    GAMMA: 0.2
+    BATCH_SIZE: 32
+    LR: 1.5e-4
+OUTPUT_DIR: 'outputs/res50_new_waymo_Adam_1_5e_f4' 
+DATASET_DIR: "datasets"
