@@ -3,8 +3,8 @@ import torch
 import cv2
 import numpy as np
 from numpy import random
-from torchvision.transforms import ColorJitter
-
+from torchvision.transforms import *
+import math
 def intersect(box_a, box_b):
     max_xy = np.minimum(box_a[:, 2:], box_b[2:])
     min_xy = np.maximum(box_a[:, :2], box_b[:2])
@@ -394,8 +394,9 @@ class SwapChannels(object):
     
 class colorJitter(object):
     def __call__(self, image, boxes=None, labels=None):
-        image = ColorJitter(brightness=0, contrast=0, saturation=0, hue=0)(image)
-        return image, boxes, labels
+        to_image = ToPILImage()
+        image = ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5)(to_image(image.astype('uint8')))
+        return np.array(image), boxes, labels
 
 class PhotometricDistort(object):
     def __init__(self):
@@ -419,3 +420,56 @@ class PhotometricDistort(object):
             distort = Compose(self.pd[1:])
         im, boxes, labels = distort(im, boxes, labels)
         return self.rand_light_noise(im, boxes, labels)
+    
+class RandomErasing(object):
+    '''
+    Class that performs Random Erasing in Random Erasing Data Augmentation by Zhong et al. 
+    -------------------------------------------------------------------------------------
+    probability: The probability that the operation will be performed.
+    sl: min erasing area
+    sh: max erasing area
+    r1: min aspect ratio
+    mean: erasing value
+    -------------------------------------------------------------------------------------
+    '''
+    def __init__(self):#, probability = 0.5, sl = 0.02, sh = 0.4, r1 = 0.3, mean=[123, 117, 104]):
+        self.probability = 0.5#probability
+        self.mean = [123, 117, 104]#mean
+        self.sl = 0.02#sl
+        self.sh = 0.4#sh
+        self.r1 = 0.3#r1
+       
+    def __call__(self, img, boxes=None, labels=None):
+
+        if random.uniform(0, 1) > self.probability:
+            #print('111')
+            return img,boxes, labels
+
+        for attempt in range(100):
+            #print('size_img',img.shape)
+            area = img.shape[0] * img.shape[1]
+            #print('area',area)
+            target_area = random.uniform(self.sl, self.sh) * area
+            #print('target_area',target_area)
+            aspect_ratio = random.uniform(self.r1, 1/self.r1)
+            #print('aspect_ratio',aspect_ratio)
+            h = int(round(math.sqrt(target_area * aspect_ratio)))
+            #print('h',h)
+            w = int(round(math.sqrt(target_area / aspect_ratio)))
+            #print('w',w)
+            
+
+            if w < img.shape[0] and h < img.shape[1]:
+                x1 = random.randint(0, img.shape[0] - h)
+                #print('x1',x1)
+                y1 = random.randint(0, img.shape[1] - w)
+                #print('y1',y1)
+                if img.shape[2] == 3:
+                    img[x1:x1+h, y1:y1+w,0] = self.mean[0]
+                    img[x1:x1+h, y1:y1+w,1] = self.mean[1]
+                    img[x1:x1+h, y1:y1+w,2] = self.mean[2]
+                else:
+                    img[x1:x1+h, y1:y1+w,0] = self.mean[0]
+                return img,boxes, labels
+
+        return img,boxes, labels
