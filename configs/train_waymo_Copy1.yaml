@@ -12,11 +12,11 @@ DATASETS:
     TRAIN: ("waymo_train",)
     TEST: ("waymo_val", )
 SOLVER:
-    CHOICE: 'Adam'
-    MAX_ITER: 65000
-    LR_STEPS: [40000, 55000]
-    GAMMA: 0.2
+    CHOICE: 'SGD'
+    MAX_ITER:  53000
+    LR_STEPS: [20000, 400000]
+    GAMMA: 0.1
     BATCH_SIZE: 32
-    LR: 1.5e-4
-OUTPUT_DIR: 'outputs/res50_new_waymo_Adam_1_5e_f4' 
+    LR: 1.e-2
+OUTPUT_DIR: 'outputs/res50_new_waymo_sgd_1e_f2_drop_block' 
 DATASET_DIR: "datasets"
