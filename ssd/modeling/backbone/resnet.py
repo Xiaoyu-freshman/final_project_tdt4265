@@ -11,8 +11,9 @@ class ResNet(nn.Module):
                                bias=False) #150*150
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
+        self.cfg = cfg
         #----------new structure called DropBlock 11sr April-------------------------
-        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+        if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             drop_prob=0.
             block_size=5
             self.dropblock = LinearScheduler(
@@ -96,7 +97,7 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
     
     def forward(self, x):
-        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+        if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             self.dropblock.step()  # increment number of iterations
         out_features = []
         #print('x',x.shape)
@@ -105,11 +106,11 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x) #75*75
-        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+        if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer1(x))#added 11st April
         x = self.layer1(x)  
         #print('x_shape',x.shape)
-        if cfg.MODEL.BACKBONE.DROP_BLOCK:
+        if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer2(x))
         x = self.layer2(x)  #38*38 output[0]
         #print('x_shape',x.shape)
