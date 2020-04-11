@@ -7,7 +7,6 @@ from ssd.modeling.box_head.box_head import SSDBoxHead
 from ssd.utils.model_zoo import load_state_dict_from_url
 from ssd.modeling.backbone.resnet import ResNet
 from torchvision.models.resnet import BasicBlock,Bottleneck
-#from ssd.modeling.backbone.resnet_base import resnet_base#ResNetBase,BasicBlock,Bottleneck
 from ssd import torch_utils
 
 class SSDDetector(nn.Module):
