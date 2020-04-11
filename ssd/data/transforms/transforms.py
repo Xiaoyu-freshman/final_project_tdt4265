@@ -445,7 +445,7 @@ class RandomErasing(object):
             #print('111')
             return img,boxes, labels
 
-        for attempt in range(100):
+        for attempt in range(5):
             #print('size_img',img.shape)
             area = img.shape[0] * img.shape[1]
             #print('area',area)
@@ -459,10 +459,12 @@ class RandomErasing(object):
             #print('w',w)
             
 
-            if w < img.shape[0] and h < img.shape[1]:
-                x1 = random.randint(0, img.shape[0] - h)
+            if h < img.shape[0] and w < img.shape[1]:
+                #print('img.shape[0]-h',img.shape[0]-h)
+                x1 = random.randint(0, abs(img.shape[0] - h))
+                
                 #print('x1',x1)
-                y1 = random.randint(0, img.shape[1] - w)
+                y1 = random.randint(0, abs(img.shape[1] - w))
                 #print('y1',y1)
                 if img.shape[2] == 3:
                     img[x1:x1+h, y1:y1+w,0] = self.mean[0]
