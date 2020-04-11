@@ -22,6 +22,7 @@ cfg.MODEL.BACKBONE.PRETRAINED = False
 cfg.MODEL.BACKBONE.AFTER_TRAINED = False
 cfg.MODEL.BACKBONE.INPUT_CHANNELS = 3
 cfg.MODEL.BACKBONE.DEPTH = 50
+cfg.MODEL.BACKBONE.DROP_BLOCK = False
 # -----------------------------------------------------------------------------
 # PRIORS
 # -----------------------------------------------------------------------------
