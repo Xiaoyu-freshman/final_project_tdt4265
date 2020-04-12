@@ -87,8 +87,8 @@ class SubtractMeans(object):
     def __call__(self, image, boxes=None, labels=None):
         image = image.astype(np.float32)
         image -= self.mean
-        std = [0.229*255, 0.224*255, 0.225*255]
-        image = image/std
+        #std = [0.229*255, 0.224*255, 0.225*255]
+        #image = image/std
         return image.astype(np.float32), boxes, labels
 
 
@@ -496,5 +496,6 @@ class  DataAaugmentationPolicy(object):
     def __call__(self, image, boxes, labels=None):
         image, boxes = distort_image_with_autoaugment(image, trans_coor_boxes(boxes), self.policy)
         boxes=trans_coor_boxes(boxes)
+        #print('boxes',np.array(boxes))
         
-        return image, boxes, labels
+        return image,boxes.astype(np.float32), labels
