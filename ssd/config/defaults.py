@@ -61,7 +61,16 @@ cfg.DATASETS = CN()
 cfg.DATASETS.TRAIN = ()
 # List of the dataset names for testing, as present in pathscfgatalog.py
 cfg.DATASETS.TEST = ()
-
+cfg.DATASETS.AUG_POLICY = 'v0' 
+'''
+The available
+      options are `v0`, `v1`, `v2`, `v3` and `test`. `v0` is the policy used for
+      all of the results in the paper and was found to achieve the best results
+      on the COCO dataset. `v1`, `v2` and `v3` are additional good policies
+      found on the COCO dataset that have slight variation in what operations
+      were used during the search procedure along with how many operations are
+      applied in parallel to a single image (2 vs 3).
+'''
 # -----------------------------------------------------------------------------
 # DataLoader
 # -----------------------------------------------------------------------------
