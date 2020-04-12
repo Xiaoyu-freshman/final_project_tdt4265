@@ -7,7 +7,7 @@ def build_transforms(cfg, is_train=True):
     if is_train:
         transform = [
               ToPercentCoords(),
-              DataAaugmentationPolicy(), 
+              DataAaugmentationPolicy(cfg.DATASETS.AUG_POLICY), 
 #             ConvertFromInts(),
 #             colorJitter(), #new_added 8th April.
 #             RandomErasing(), #new_added 11st April.
