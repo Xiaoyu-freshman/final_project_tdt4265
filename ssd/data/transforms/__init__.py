@@ -6,8 +6,9 @@ from .transforms import *
 def build_transforms(cfg, is_train=True):
     if is_train:
         transform = [
-              ToPercentCoords(),
-              DataAaugmentationPolicy(cfg.DATASETS.AUG_POLICY), 
+            ConvertFromInts(),
+            ToPercentCoords(),
+            DataAaugmentationPolicy(cfg.DATASETS.AUG_POLICY), 
 #             ConvertFromInts(),
 #             colorJitter(), #new_added 8th April.
 #             RandomErasing(), #new_added 11st April.
@@ -18,8 +19,8 @@ def build_transforms(cfg, is_train=True):
             
 #             #new_tecnologies are up:
 #             ToPercentCoords(),
-#             Resize(cfg.INPUT.IMAGE_SIZE),
-#             SubtractMeans(cfg.INPUT.PIXEL_MEAN),
+            Resize(cfg.INPUT.IMAGE_SIZE),
+            #SubtractMeans(cfg.INPUT.PIXEL_MEAN),
             ToTensor(),
         ]
     else:
