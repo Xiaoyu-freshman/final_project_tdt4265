@@ -6,11 +6,13 @@ MODEL:
         OUT_CHANNELS: [512,1024,2048,512, 256, 128]    #[128, 256, 512, 512, 256, 128]
         INPUT_CHANNELS: 3
         DEPTH: 50
+        DROP_BLOCK: False
 INPUT:
     IMAGE_SIZE: 300
 DATASETS:
     TRAIN: ("waymo_train",)
     TEST: ("waymo_val", )
+    AUG_POLIC: 'v1'
 SOLVER:
     CHOICE: 'SGD'
     MAX_ITER:  53000
@@ -18,5 +20,5 @@ SOLVER:
     GAMMA: 0.1
     BATCH_SIZE: 32
     LR: 1.e-2
-OUTPUT_DIR: 'outputs/res50_new_waymo_sgd_1e_f2_drop_block' 
+OUTPUT_DIR: 'outputs/res50_new_waymo_sgd_1e_f2_aug_policy_v1' 
 DATASET_DIR: "datasets"
