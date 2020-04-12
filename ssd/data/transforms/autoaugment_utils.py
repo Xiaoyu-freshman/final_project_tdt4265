@@ -13,7 +13,7 @@ _MAX_LEVEL = 10.
 
 # Represents an invalid bounding box that is used for checking for padding
 # lists of bounding box coordinates for a few augmentation operations
-_INVALID_BOX = [[-1.0, -1.0, -1.0, -1.0, -1, -1, -1]]
+_INVALID_BOX = [[-1.0, -1.0, -1.0, -1.0]]
 
 def policy_custom():
   """Autoaugment policy that was used in AutoAugment Detection Paper."""
@@ -259,7 +259,7 @@ def contrast(img, factor):
       return img
 
   if isinstance(img, np.ndarray):
-      img = Image.fromarray(img)
+      img = Image.fromarray(np.uint8(img))
 
   img = ImageEnhance.Contrast(img).enhance(factor)
   return np.array(img)
@@ -277,7 +277,7 @@ def posterize(img, bits):
       return img
   shift = 8 - bits
   if isinstance(img, np.ndarray):
-      img = Image.fromarray(img)
+      img = Image.fromarray(np.uint8(img))
   img = ImageOps.posterize(img, shift)
   return np.array(img)
 
@@ -291,7 +291,7 @@ def rotate(image, degrees, replace):
       return image
 
     if isinstance(image, np.ndarray):
-        img = Image.fromarray(image)
+        img = Image.fromarray(np.uint8(image))
 
     rot = img.convert("RGBA").rotate(degrees)
     img = Image.composite(rot, Image.new("RGBA", rot.size, (replace[0],) * 4), rot).convert(img.mode)
@@ -535,7 +535,7 @@ def _concat_bbox(bbox, bboxes):
   bbox = bbox[np.newaxis, ...]
 
   # This check will be true when it is an _INVALID_BOX
-  if np.any(bboxes_sum_check == -7.0):
+  if np.any(bboxes_sum_check == -4.0):
       bboxes = bbox
   else:
       bboxes = np.concatenate([bboxes, bbox], axis=0)
@@ -618,7 +618,7 @@ def _apply_multi_bbox_augmentation(image, bboxes, prob, aug_func,
   if bboxes.shape[0] == 0:
       bboxes = np.array(_INVALID_BOX)
 
-  bboxes = bboxes.reshape(-1, 7)
+  bboxes = bboxes.reshape(-1, 4)
 
   # pylint:disable=g-long-lambda
   # pylint:disable=line-too-long
@@ -838,7 +838,7 @@ def translate_x(img, pixels, replace):
       return img
 
   if isinstance(img, np.ndarray):
-      img = Image.fromarray(img)
+      img = Image.fromarray(np.uint8(img))
   img = img.transform(img.size, Image.AFFINE, (1, 0, pixels, 0, 1, 0), fillcolor=replace)
   return np.array(img)
 
@@ -849,7 +849,7 @@ def translate_y(img, pixels, replace):
       return img
 
   if isinstance(img, np.ndarray):
-      img = Image.fromarray(img)
+      img = Image.fromarray(np.uint8(img))
 
   img = img.transform(img.size, Image.AFFINE, (1, 0, 0, 0, 1, pixels), fillcolor=replace)
   return np.array(img)
@@ -941,7 +941,7 @@ def shear_x(img, magnitude, fillcolor):
       return img
 
   if isinstance(img, np.ndarray):
-      img = Image.fromarray(img)
+      img = Image.fromarray(np.uint8(img))
   img = img.transform(img.size, Image.AFFINE, (1, magnitude, 0, 0, 1, 0), Image.BICUBIC, fillcolor=fillcolor)
   return np.array(img)
 
@@ -956,7 +956,7 @@ def shear_y(img, magnitude, fillcolor):
       return img
 
   if isinstance(img, np.ndarray):
-      img = Image.fromarray(img)
+      img = Image.fromarray(np.uint8(img))
   img = img.transform(img.size, Image.AFFINE, (1, 0, 0, magnitude, 1, 0), Image.BICUBIC, fillcolor=fillcolor)
   return np.array(img)
 
@@ -1090,7 +1090,7 @@ def sharpness(image, factor):
       return img
 
   if isinstance(image, np.ndarray):
-      img = Image.fromarray(image)
+      img = Image.fromarray(np.uint8(image))
   img = ImageEnhance.Sharpness(img).enhance(1 + factor * random.choice([-1, 1]))
   return np.array(img)
 
@@ -1100,7 +1100,7 @@ def equalize(image):
       return image
 
   if isinstance(image, np.ndarray):
-      img = Image.fromarray(image)
+      img = Image.fromarray(np.uint8(image))
   img = ImageOps.equalize(img)
   return np.array(img)
 
