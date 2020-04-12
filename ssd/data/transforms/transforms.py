@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from numpy import random
 from torchvision.transforms import *
+from .autoaugment_utils import * #added by Xiaoyu 12 April.
 import math
 def intersect(box_a, box_b):
     max_xy = np.minimum(box_a[:, 2:], box_b[2:])
@@ -475,3 +476,22 @@ class RandomErasing(object):
                 return img,boxes, labels
 
         return img,boxes, labels
+
+#---------------------Added by Xiaoyu------------------------------
+#for trying the data_aug policy proposed by Barret Zoph
+#Title: Learning Data Augmentation Strategies for Object Detection
+def trans_coor_boxes(box_original):
+#covnert x_min,y_min,x_max,y_max to min_y, min_x, max_y, max_x
+    box_trans=np.zeros(box_original.shape)
+    box_trans[:,0]=box_original[:,1]
+    box_trans[:,1]=box_original[:,0]
+    box_trans[:,2]=box_original[:,3]
+    box_trans[:,3]=box_original[:,2]
+    return box_trans
+
+class  DataAaugmentationPolicy(object):
+    def __call__(self, image, boxes, labels=None):
+        image, boxes = distort_image_with_autoaugment(image, trans_coor_boxes(boxes), 'v1')
+        boxes=trans_coor_boxes(boxes)
+        
+        return image, boxes, labels
