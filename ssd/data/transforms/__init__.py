@@ -6,18 +6,20 @@ from .transforms import *
 def build_transforms(cfg, is_train=True):
     if is_train:
         transform = [
-            ConvertFromInts(),
-            colorJitter(), #new_added 8th April.
-            RandomErasing(), #new_added 11st April.
-            #new_tecnologies are below:
-            Expand(cfg.INPUT.PIXEL_MEAN),
-            RandomSampleCrop(),
-            RandomMirror(),
+              ToPercentCoords(),
+              DataAaugmentationPolicy(), 
+#             ConvertFromInts(),
+#             colorJitter(), #new_added 8th April.
+#             RandomErasing(), #new_added 11st April.
+#             #new_tecnologies are below:
+#             Expand(cfg.INPUT.PIXEL_MEAN),
+#             RandomSampleCrop(),
+#             RandomMirror(),
             
-            #new_tecnologies are up:
-            ToPercentCoords(),
-            Resize(cfg.INPUT.IMAGE_SIZE),
-            SubtractMeans(cfg.INPUT.PIXEL_MEAN),
+#             #new_tecnologies are up:
+#             ToPercentCoords(),
+#             Resize(cfg.INPUT.IMAGE_SIZE),
+#             SubtractMeans(cfg.INPUT.PIXEL_MEAN),
             ToTensor(),
         ]
     else:
