@@ -490,8 +490,11 @@ def trans_coor_boxes(box_original):
     return box_trans
 
 class  DataAaugmentationPolicy(object):
+    def __init__(self, policy):
+        self.policy = policy
+        
     def __call__(self, image, boxes, labels=None):
-        image, boxes = distort_image_with_autoaugment(image, trans_coor_boxes(boxes), 'v1')
+        image, boxes = distort_image_with_autoaugment(image, trans_coor_boxes(boxes), self.policy)
         boxes=trans_coor_boxes(boxes)
         
         return image, boxes, labels
