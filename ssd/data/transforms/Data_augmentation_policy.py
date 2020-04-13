@@ -5,24 +5,56 @@ For use this augmentation method, since the order of the element in bboxes is
 min_y, min_x, max_y, max_x
 
 '''
-from .autoaugment_utils import *
+from urllib.request import urlopen
+import os
 
+import numpy as np
+import cv2
+from matplotlib import pyplot as plt
 
-def trans_coor_boxes(box_original):
-#covnert x_min,y_min,x_max,y_max to min_y, min_x, max_y, max_x
-    box_trans=np.zeros(box_original.shape)
-    box_trans[:,0]=box_original[:,1]
-    box_trans[:,1]=box_original[:,0]
-    box_trans[:,2]=box_original[:,3]
-    box_trans[:,3]=box_original[:,2]
-    return box_trans
+import albumentations as A
+
+def get_aug(aug, min_area=0., min_visibility=0.):
+    
+    return A.Compose(aug, bbox_params=A.BboxParams(format='pascal_voc', min_area=min_area,min_visibility=min_visibility, label_fields=['category_id']))
+
 
 class  DataAaugmentationPolicy(object):
-    def __call__(self, image, boxes, labels=None):
-        image, boxes = distort_image_with_autoaugment(img, trans_coor_boxes(box), 'v1')
-        boxes=trans_coor_boxes(box)
-        
-        return image, boxes, labels
+    def __call__(self, image, boxes=None, labels=None):
+        #initialize the format for lib albumentations
+        if boxes.shape[0] == 0:
+            return image, boxes, labels
+        bbox=[]
+        for i in boxes:
+            bbox.append(list(i))
+        #create annotations
+        annotations = {'image': image, 'bboxes': boxes, 'category_id':  list(labels)}
+        #create translation
+        trans_t = A.Compose([
+            #Color_Level Change 
+            A.Cutout(num_holes=20, max_h_size=64, max_w_size=64, fill_value=255, always_apply=False, p=0.5),
+            A.Equalize(p=1),
+            A.HueSaturationValue(hue_shift_limit=50, sat_shift_limit=50, val_shift_limit=50, always_apply=False, p=1),
+            A.OneOf([
+                A.RandomFog(fog_coef_lower=0.3, fog_coef_upper=0.7, alpha_coef=0.08, always_apply=False, p=0.5),
+                A.RandomSnow(snow_point_lower=0.1, snow_point_upper=0.3, brightness_coeff=2.5, always_apply=False, p=0.5),
+                A.RandomSunFlare(flare_roi=(0, 0, 1, 0.5), angle_lower=0, angle_upper=1, num_flare_circles_lower=6, num_flare_circles_upper=10, src_radius=400, src_color=(255, 255, 255), always_apply=False, p=0.5),
+                A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=20, drop_width=1, drop_color=(200, 200, 200), blur_value=7, brightness_coefficient=0.7, rain_type=None, always_apply=False, p=0.5)
+            ]),
+            #Spatial_Level
+            #Because the rotate can cluse the bounding box dissappear, so try to use vertical and horizontal flip to replace it.
+            A.VerticalFlip(always_apply=False, p=0.5), 
+            A.HorizontalFlip(always_apply=False, p=0.5),
+            A.RandomSizedBBoxSafeCrop(300, 300, erosion_rate=0.0, interpolation=1, always_apply=False, p=1.0),   
+        ])
+        #Apply the trans
+        aug=get_aug(trans_t)
+        augmented = aug(**annotations)
+        img=augmented['image']
+        bbox=augmented['bboxes']
+        label=augmented['category_id']
+        bbox = np.array(bbox)
+        return img, bbox.astype(np.float32) , np.array(label)
          
     
     
