@@ -1,26 +1,17 @@
 from ssd.modeling.box_head.prior_box import PriorBox
 from .target_transform import SSDTargetTransform
 from .transforms import *
+from .Data_augmentation_policy import DataAaugmentationPolicy
 
 
 def build_transforms(cfg, is_train=True):
     if is_train:
         transform = [
-            ConvertFromInts(),
+            #ConvertFromInts(),
+            DataAaugmentationPolicy(),
+            #Resize(cfg.INPUT.IMAGE_SIZE),
+            SubtractMeans(cfg.INPUT.PIXEL_MEAN),
             ToPercentCoords(),
-            DataAaugmentationPolicy(cfg.DATASETS.AUG_POLICY), 
-#             ConvertFromInts(),
-#             colorJitter(), #new_added 8th April.
-#             RandomErasing(), #new_added 11st April.
-#             #new_tecnologies are below:
-#             Expand(cfg.INPUT.PIXEL_MEAN),
-#             RandomSampleCrop(),
-#             RandomMirror(),
-            
-#             #new_tecnologies are up:
-#             ToPercentCoords(),
-            Resize(cfg.INPUT.IMAGE_SIZE),
-            #SubtractMeans(cfg.INPUT.PIXEL_MEAN),
             ToTensor(),
         ]
     else:
