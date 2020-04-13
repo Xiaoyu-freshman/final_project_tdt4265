@@ -70,8 +70,12 @@ class Compose(object):
     def __call__(self, img, boxes=None, labels=None):
         for t in self.transforms:
             img, boxes, labels = t(img, boxes, labels)
+            if boxes is None:
+                print('11111')
+            boxes, labels = remove_empty_boxes(boxes, labels)
             if boxes is not None:
                 boxes, labels = remove_empty_boxes(boxes, labels)
+            
         return img, boxes, labels
 
 
@@ -87,8 +91,8 @@ class SubtractMeans(object):
     def __call__(self, image, boxes=None, labels=None):
         image = image.astype(np.float32)
         image -= self.mean
-        #std = [0.229*255, 0.224*255, 0.225*255]
-        #image = image/std
+        std = [0.229*255, 0.224*255, 0.225*255]
+        image = image/std
         return image.astype(np.float32), boxes, labels
 
 
@@ -105,13 +109,24 @@ class ToAbsoluteCoords(object):
 
 class ToPercentCoords(object):
     def __call__(self, image, boxes=None, labels=None):
-        height, width, channels = image.shape
-        boxes[:, 0] /= width
-        boxes[:, 2] /= width
-        boxes[:, 1] /= height
-        boxes[:, 3] /= height
+        try:
+            height, width, channels = image.shape
+            boxes[:, 0] /= width
+            boxes[:, 2] /= width
+            boxes[:, 1] /= height
+            boxes[:, 3] /= height
+            return image, boxes, labels
+        except:
+            height, width, channels = image.shape
+            print('Wrong!!!!!!!!')
+            print('image.shape',image.shape)
+            print('box',boxes)
+            print('boxes.shape',boxes.shape[0])
+            print('labels',labels)
+            #boxes=None
+            return image, boxes, labels
 
-        return image, boxes, labels
+            
 
 
 class Resize(object):
@@ -119,6 +134,7 @@ class Resize(object):
         self.size = size
         
     def __call__(self, image, boxes=None, labels=None):
+        
         image = cv2.resize(image, (self.size,
                                    self.size))
 #         image = cv2.resize(image, (320,
@@ -480,22 +496,48 @@ class RandomErasing(object):
 #---------------------Added by Xiaoyu------------------------------
 #for trying the data_aug policy proposed by Barret Zoph
 #Title: Learning Data Augmentation Strategies for Object Detection
-def trans_coor_boxes(box_original):
-#covnert x_min,y_min,x_max,y_max to min_y, min_x, max_y, max_x
-    box_trans=np.zeros(box_original.shape)
-    box_trans[:,0]=box_original[:,1]
-    box_trans[:,1]=box_original[:,0]
-    box_trans[:,2]=box_original[:,3]
-    box_trans[:,3]=box_original[:,2]
-    return box_trans
+# def trans_coor_boxes(box_original):
+# #covnert x_min,y_min,x_max,y_max to min_y, min_x, max_y, max_x
+#     box_trans=np.zeros(box_original.shape)
+#     box_trans[:,0]=box_original[:,1]
+#     box_trans[:,1]=box_original[:,0]
+#     box_trans[:,2]=box_original[:,3]
+#     box_trans[:,3]=box_original[:,2]
+#     return box_trans
 
-class  DataAaugmentationPolicy(object):
-    def __init__(self, policy):
-        self.policy = policy
+# class  DataAaugmentationPolicy(object):
+#     def __init__(self, policy):
+#         self.policy = 'test'
         
-    def __call__(self, image, boxes, labels=None):
-        image, boxes = distort_image_with_autoaugment(image, trans_coor_boxes(boxes), self.policy)
-        boxes=trans_coor_boxes(boxes)
-        #print('boxes',np.array(boxes))
+#     def __call__(self, image, boxes=None, labels=None):
+# #         if len(boxes) == 0:
+# #             return image, boxes, labels
+# #         else:
+#         print('image',image,'boxes',boxes,'policy',self.policy)
+#         image, boxes = distort_image_with_autoaugment(image, trans_coor_boxes(boxes), 'v0')#self.policy)
+#         try:
+#             boxes=trans_coor_boxes(boxes)
+#         except:
+# #             print('error: something wrong')
+# #             print('boxes.shape',boxes.shape)
+# #             print('box',boxes)
+# #             print('box_type',type(boxes))
+# #             print('box_is_null',len(boxes))
+# #             print('labels.shape',labels.shape)
+# #             print('labels',labels)
+# #             print('img',image)
+#             boxes, labels = remove_empty_boxes(boxes, labels)
+#             return image,boxes.astype(np.float32), labels
+            
+            
+#         boxes, labels = remove_empty_boxes(boxes, labels)
+#         return image,boxes.astype(np.float32), labels
+# class Rorate_With_Boxes(object):
+#     def __init__(self,degrees,replace):
+#         self.degrees = degrees
+#         self.replace = replace
+#     def __call__(self,image, bboxes, labels = None):
+#         #Rotate the image
+#         image = rorate (image,degrees,replace)
         
-        return image,boxes.astype(np.float32), labels
+        
