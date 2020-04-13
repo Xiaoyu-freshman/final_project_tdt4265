@@ -30,8 +30,8 @@ class  DataAaugmentationPolicy(object):
         #create annotations
         annotations = {'image': image, 'bboxes': boxes, 'category_id':  list(labels)}
         #create translation
-        trans_t = A.Compose([
-            #Color_Level Change 
+        #Color_Level Change
+        trans_color_level = A.Compose([
             A.Cutout(num_holes=20, max_h_size=64, max_w_size=64, fill_value=255, always_apply=False, p=0.5),
             A.Equalize(p=1),
             A.HueSaturationValue(hue_shift_limit=50, sat_shift_limit=50, val_shift_limit=50, always_apply=False, p=1),
@@ -41,21 +41,38 @@ class  DataAaugmentationPolicy(object):
                 A.RandomSunFlare(flare_roi=(0, 0, 1, 0.5), angle_lower=0, angle_upper=1, num_flare_circles_lower=6, num_flare_circles_upper=10, src_radius=400, src_color=(255, 255, 255), always_apply=False, p=0.5),
                 A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=20, drop_width=1, drop_color=(200, 200, 200), blur_value=7, brightness_coefficient=0.7, rain_type=None, always_apply=False, p=0.5)
             ]),
-            #Spatial_Level
-            #Because the rotate can cluse the bounding box dissappear, so try to use vertical and horizontal flip to replace it.
-            A.VerticalFlip(always_apply=False, p=0.5), 
-            A.HorizontalFlip(always_apply=False, p=0.5),
-            A.RandomSizedBBoxSafeCrop(300, 300, erosion_rate=0.0, interpolation=1, always_apply=False, p=1.0),   
+            A.RandomSizedBBoxSafeCrop(300, 300, erosion_rate=0.0, interpolation=1, always_apply=False, p=1.0)
+        ])
+        #Spatial_Level
+        trans_rotate_level = A.Compose([
+            A.OneOf([
+                A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.5),
+                A.RandomRotate90(always_apply=False, p=0.5),
+                A.VerticalFlip(always_apply=False, p=0.5), 
+                A.HorizontalFlip(always_apply=False, p=0.5)
+            ]),
+               
         ])
         #Apply the trans
-        aug=get_aug(trans_t)
+        aug=get_aug(trans_color_level)
         augmented = aug(**annotations)
         img=augmented['image']
         bbox=augmented['bboxes']
-        label=augmented['category_id']
         bbox = np.array(bbox)
-        return img, bbox.astype(np.float32) , np.array(label)
-         
+        label=augmented['category_id']
+        #try rotate
+        aug1 = get_aug(trans_rotate_level)
+        augmented1 = aug1(**augmented)
+        img1=augmented['image']
+        bbox1=augmented['bboxes']
+        bbox1 = np.array(bbox1)
+        label1=augmented['category_id']
+        
+        #if rotate fail
+        if bbox1.shape[0] == 0: 
+            return img, bbox.astype(np.float32) , np.array(label)
+        else:
+            return img1, bbox1.astype(np.float32) , np.array(label1)
     
     
     
