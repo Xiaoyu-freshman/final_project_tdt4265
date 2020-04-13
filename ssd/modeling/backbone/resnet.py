@@ -108,11 +108,13 @@ class ResNet(nn.Module):
         x = self.maxpool(x) #75*75
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer1(x))#added 11st April
-        x = self.layer1(x)  
+        else:
+            x = self.layer1(x)  
         #print('x_shape',x.shape)
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer2(x))
-        x = self.layer2(x)  #38*38 output[0]
+        else:
+            x = self.layer2(x)  #38*38 output[0]
         #print('x_shape',x.shape)
         out_features.append(x)
         x = self.layer3(x)  #19*19 output[1]
