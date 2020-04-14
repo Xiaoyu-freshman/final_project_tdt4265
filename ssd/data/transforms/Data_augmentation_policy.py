@@ -41,7 +41,8 @@ class  DataAaugmentationPolicy(object):
                 A.RandomSunFlare(flare_roi=(0, 0, 1, 0.5), angle_lower=0, angle_upper=1, num_flare_circles_lower=6, num_flare_circles_upper=10, src_radius=400, src_color=(255, 255, 255), always_apply=False, p=0.5),
                 A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=20, drop_width=1, drop_color=(200, 200, 200), blur_value=7, brightness_coefficient=0.7, rain_type=None, always_apply=False, p=0.5)
             ]),
-            A.RandomSizedBBoxSafeCrop(300, 300, erosion_rate=0.0, interpolation=1, always_apply=False, p=1.0)
+            A.RandomSizedBBoxSafeCrop(900, 900, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
+            A.Resize(300, 300, interpolation=1, always_apply=False, p=1)
         ])
         #Spatial_Level
         trans_rotate_level = A.Compose([
@@ -63,12 +64,14 @@ class  DataAaugmentationPolicy(object):
         #try rotate
         aug1 = get_aug(trans_rotate_level)
         augmented1 = aug1(**augmented)
-        img1=augmented['image']
-        bbox1=augmented['bboxes']
+        img1=augmented1['image']
+        bbox1=augmented1['bboxes']
         bbox1 = np.array(bbox1)
-        label1=augmented['category_id']
+        label1=augmented1['category_id']
         
         #if rotate fail
+#         print('img',img,'bbox',bbox,'label',label)
+#         print('img1',img1,'bbox1',bbox1,'label1',label1)
         if bbox1.shape[0] == 0: 
             return img, bbox.astype(np.float32) , np.array(label)
         else:
