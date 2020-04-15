@@ -25,5 +25,5 @@ SOLVER:
     GAMMA: 0.1
     BATCH_SIZE: 32
     LR: 1.e-2
-OUTPUT_DIR: 'outputs/Res34_15_Apr/Res34_Modify_input' 
+OUTPUT_DIR: 'outputs/Res34_15_Apr/waymo_sgd_1e_f2_DB'  
 DATASET_DIR: "datasets"
