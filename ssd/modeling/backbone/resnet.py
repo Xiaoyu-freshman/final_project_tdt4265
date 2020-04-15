@@ -30,12 +30,12 @@ class ResNet(nn.Module):
         
         #2. extra_layers (ReLU will be used in the foward function) 10thApril,Xiaoyu Zhu
         if cfg.MODEL.BACKBONE.DEPTH>34:
-            self.ex_layer1 = self._make_extra_layers(2048,512,1) #5*5
+            self.ex_layer1 = self._make_extra_layers(2048,512,3,1) #5*5
         else:
-            self.ex_layer1 = self._make_extra_layers(512,512,1)  #5*5
+            self.ex_layer1 = self._make_extra_layers(512,512,3,1)  #5*5
         
-        self.ex_layer2 = self._make_extra_layers(512,256,1) #3*3
-        self.ex_layer3 = self._make_extra_layers(256,128,0) #1*1
+        self.ex_layer2 = self._make_extra_layers(512,256,3,1) #3*3
+        self.ex_layer3 = self._make_extra_layers(256,128,[2,3],0) #1*1
         
 #-----------------------------------Old Version-------------------        
 #         2. extra_layers (ReLU will be used in the foward function)
@@ -85,13 +85,13 @@ class ResNet(nn.Module):
             layers.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers)
-    def _make_extra_layers(self, input_channels, output_channels, p): #10thApril,Xiaoyu Zhu
+    def _make_extra_layers(self, input_channels, output_channels,k, p): #10thApril,Xiaoyu Zhu
         layers = []
-        layers.append(torch.nn.Conv2d(in_channels=input_channels, out_channels=output_channels,kernel_size=3,stride=1,padding=1))
+        layers.append(torch.nn.Conv2d(in_channels=input_channels, out_channels=output_channels,kernel_size=k,stride=1,padding=1))
         layers.append(nn.ReLU(inplace=True))
         layers.append(nn.BatchNorm2d(output_channels))
         layers.append(nn.Dropout(0.5))
-        layers.append(torch.nn.Conv2d(in_channels=output_channels, out_channels=output_channels,kernel_size=3,stride=2,padding=p)) 
+        layers.append(torch.nn.Conv2d(in_channels=output_channels, out_channels=output_channels,kernel_size=k,stride=2,padding=p)) 
         layers.append(nn.ReLU(inplace=True))
         layers.append(nn.BatchNorm2d(output_channels))
         return nn.Sequential(*layers)
@@ -100,35 +100,39 @@ class ResNet(nn.Module):
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             self.dropblock.step()  # increment number of iterations
         out_features = []
-        #print('x',x.shape)
-        x = self.conv1(x) #150*150
-        #print('x_shape',x.shape)
+        #print('Input',x.shape) #Original 300*300; For rectange input size :320*240
+        x = self.conv1(x) 
+        #print('self.conv1',x.shape) #150*150; 160*120
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x) #75*75
+        x = self.maxpool(x) 
+        #print('self.maxpool',x.shape) #75*75; 80*60
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer1(x))#added 11st April
         else:
             x = self.layer1(x)  
-        #print('x_shape',x.shape)
+        #print('layer1',x.shape) #80*60
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer2(x))
         else:
-            x = self.layer2(x)  #38*38 output[0]
-        #print('x_shape',x.shape)
+            x = self.layer2(x) 
+        #print('layer2',x.shape)  #38*38 output[0]; 30*40
         out_features.append(x)
-        x = self.layer3(x)  #19*19 output[1]
-        #print('x_shape',x.shape)
+        x = self.layer3(x)  
+        #print('layer3',x.shape) #19*19 output[1]; 15*20
         out_features.append(x)
-        x = self.layer4(x)  #10*10 output[2]
-        #print('x_shape',x.shape)
+        x = self.layer4(x)  
+        #print('layer4',x.shape) #10*10 output[2]; 8*10
         out_features.append(x)
         #For other output: 10thApril,Xiaoyu Zhu
-        x = self.ex_layer1(x) #5*5 output[3]  
+        x = self.ex_layer1(x) 
+        #print('ex_layer1',x.shape) #5*5 output[3] ;4*5
         out_features.append(x) 
-        x = self.ex_layer2(x) #3*3 output[4]  
+        x = self.ex_layer2(x) 
+        #print('ex_layer2',x.shape) #3*2 output[4] ;2*3
         out_features.append(x) 
-        x = self.ex_layer3(x) #1*1 output[5]  
+        x = self.ex_layer3(x)  
+        #print('ex_layer3',x.shape) #1*1 output[5] 
         out_features.append(x) 
 #-----------------------------------Old Version-------------------        
 #         #For other outputs:
