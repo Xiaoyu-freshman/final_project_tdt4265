@@ -34,21 +34,21 @@ class  DataAaugmentationPolicy(object):
         trans_color_level = A.Compose([
             A.Cutout(num_holes=20, max_h_size=64, max_w_size=64, fill_value=255, always_apply=False, p=0.5),
             A.Equalize(p=1),
-            A.HueSaturationValue(hue_shift_limit=50, sat_shift_limit=50, val_shift_limit=50, always_apply=False, p=1),
+            A.HueSaturationValue(hue_shift_limit=50, sat_shift_limit=50, val_shift_limit=50, always_apply=False, p=0.5),
             A.OneOf([
                 A.RandomFog(fog_coef_lower=0.3, fog_coef_upper=0.7, alpha_coef=0.08, always_apply=False, p=0.5),
                 A.RandomSnow(snow_point_lower=0.1, snow_point_upper=0.3, brightness_coeff=2.5, always_apply=False, p=0.5),
                 A.RandomSunFlare(flare_roi=(0, 0, 1, 0.5), angle_lower=0, angle_upper=1, num_flare_circles_lower=6, num_flare_circles_upper=10, src_radius=400, src_color=(255, 255, 255), always_apply=False, p=0.5),
                 A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=20, drop_width=1, drop_color=(200, 200, 200), blur_value=7, brightness_coefficient=0.7, rain_type=None, always_apply=False, p=0.5)
             ]),
-            A.RandomSizedBBoxSafeCrop(900, 900, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-            A.Resize(300, 300, interpolation=1, always_apply=False, p=1)
+            A.RandomSizedBBoxSafeCrop(720, 960, erosion_rate=0.0, interpolation=1, always_apply=False, p=1),
+            #A.Resize(300, 300, interpolation=1, always_apply=False, p=1)
         ])
         #Spatial_Level
         trans_rotate_level = A.Compose([
             A.OneOf([
-                A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.5),
-                A.RandomRotate90(always_apply=False, p=0.5),
+#                 A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.5),
+#                 A.RandomRotate90(always_apply=False, p=0.5),
                 A.VerticalFlip(always_apply=False, p=0.5), 
                 A.HorizontalFlip(always_apply=False, p=0.5)
             ]),
