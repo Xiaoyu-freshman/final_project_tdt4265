@@ -3,12 +3,15 @@ MODEL:
     BACKBONE:
         NAME: 'resnet'   #vgg   #'basic'
         PRETRAINED: True
-        OUT_CHANNELS: [512,1024,2048,512, 256, 128]    #[128, 256, 512, 512, 256, 128]
+        OUT_CHANNELS: [128, 256, 512, 512, 256, 128]  #[512,1024,2048,512, 256, 128]    
         INPUT_CHANNELS: 3
-        DEPTH: 50
-        DROP_BLOCK: False
+        DEPTH: 34
+        DROP_BLOCK: True
+    PRIORS:
+        FEATURE_MAPS: [[30,40], [15,20], [8,10], [4,5], [2,3], [1,1]]
+        STRIDES: [[8,8], [16,16], [30,32], [60,64], [120,106], [240,320]]
 INPUT:
-    IMAGE_SIZE: 300
+    IMAGE_SIZE: [240,320]  #[H,W]
 DATASETS:
     TRAIN: ("waymo_train",)
     TEST: ("waymo_val", )
@@ -22,5 +25,5 @@ SOLVER:
     GAMMA: 0.1
     BATCH_SIZE: 32
     LR: 1.e-2
-OUTPUT_DIR: 'outputs/res50_new_waymo_sgd_1e_f2_aug_policy_with_flip' 
+OUTPUT_DIR: 'outputs/Res34_15_Apr/Res34_Modify_input' 
 DATASET_DIR: "datasets"
