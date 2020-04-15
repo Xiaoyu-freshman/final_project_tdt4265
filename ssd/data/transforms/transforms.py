@@ -3,9 +3,8 @@ import torch
 import cv2
 import numpy as np
 from numpy import random
-from torchvision.transforms import *
-from .autoaugment_utils import * #added by Xiaoyu 12 April.
-import math
+
+
 def intersect(box_a, box_b):
     max_xy = np.minimum(box_a[:, 2:], box_b[2:])
     min_xy = np.maximum(box_a[:, :2], box_b[:2])
@@ -35,12 +34,10 @@ def jaccard_numpy(box_a, box_b):
 
 def remove_empty_boxes(boxes, labels):
     """Removes bounding boxes of W or H equal to 0 and its labels
-
     Args:
         boxes   (ndarray): NP Array with bounding boxes as lines
                            * BBOX[x1, y1, x2, y2]
         labels  (labels): Corresponding labels with boxes
-
     Returns:
         ndarray: Valid bounding boxes
         ndarray: Corresponding labels
@@ -70,12 +67,8 @@ class Compose(object):
     def __call__(self, img, boxes=None, labels=None):
         for t in self.transforms:
             img, boxes, labels = t(img, boxes, labels)
-            if boxes is None:
-                print('11111')
-            boxes, labels = remove_empty_boxes(boxes, labels)
             if boxes is not None:
                 boxes, labels = remove_empty_boxes(boxes, labels)
-            
         return img, boxes, labels
 
 
@@ -109,24 +102,13 @@ class ToAbsoluteCoords(object):
 
 class ToPercentCoords(object):
     def __call__(self, image, boxes=None, labels=None):
-        try:
-            height, width, channels = image.shape
-            boxes[:, 0] /= width
-            boxes[:, 2] /= width
-            boxes[:, 1] /= height
-            boxes[:, 3] /= height
-            return image, boxes, labels
-        except:
-            height, width, channels = image.shape
-            print('Wrong!!!!!!!!')
-            print('image.shape',image.shape)
-            print('box',boxes)
-            print('boxes.shape',boxes.shape[0])
-            print('labels',labels)
-            #boxes=None
-            return image, boxes, labels
+        height, width, channels = image.shape
+        boxes[:, 0] /= width
+        boxes[:, 2] /= width
+        boxes[:, 1] /= height
+        boxes[:, 3] /= height
 
-            
+        return image, boxes, labels
 
 
 class Resize(object):
@@ -134,11 +116,8 @@ class Resize(object):
         self.size = size
         
     def __call__(self, image, boxes=None, labels=None):
-        
-        image = cv2.resize(image, (self.size,
-                                   self.size))
-#         image = cv2.resize(image, (320,
-#                                    240))
+        image = cv2.resize(image, (self.size[1],
+                                   self.size[0]))
         return image, boxes, labels
 
 
@@ -407,13 +386,7 @@ class SwapChannels(object):
         #     image = np.array(image)
         image = image[:, :, self.swaps]
         return image
-    
-    
-class colorJitter(object):
-    def __call__(self, image, boxes=None, labels=None):
-        to_image = ToPILImage()
-        image = ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5)(to_image(image.astype('uint8')))
-        return np.array(image), boxes, labels
+
 
 class PhotometricDistort(object):
     def __init__(self):
@@ -437,107 +410,3 @@ class PhotometricDistort(object):
             distort = Compose(self.pd[1:])
         im, boxes, labels = distort(im, boxes, labels)
         return self.rand_light_noise(im, boxes, labels)
-    
-class RandomErasing(object):
-    '''
-    Class that performs Random Erasing in Random Erasing Data Augmentation by Zhong et al. 
-    -------------------------------------------------------------------------------------
-    probability: The probability that the operation will be performed.
-    sl: min erasing area
-    sh: max erasing area
-    r1: min aspect ratio
-    mean: erasing value
-    -------------------------------------------------------------------------------------
-    '''
-    def __init__(self):#, probability = 0.5, sl = 0.02, sh = 0.4, r1 = 0.3, mean=[123, 117, 104]):
-        self.probability = 0.5#probability
-        self.mean = [123, 117, 104]#mean
-        self.sl = 0.02#sl
-        self.sh = 0.4#sh
-        self.r1 = 0.3#r1
-       
-    def __call__(self, img, boxes=None, labels=None):
-
-        if random.uniform(0, 1) > self.probability:
-            #print('111')
-            return img,boxes, labels
-
-        for attempt in range(5):
-            #print('size_img',img.shape)
-            area = img.shape[0] * img.shape[1]
-            #print('area',area)
-            target_area = random.uniform(self.sl, self.sh) * area
-            #print('target_area',target_area)
-            aspect_ratio = random.uniform(self.r1, 1/self.r1)
-            #print('aspect_ratio',aspect_ratio)
-            h = int(round(math.sqrt(target_area * aspect_ratio)))
-            #print('h',h)
-            w = int(round(math.sqrt(target_area / aspect_ratio)))
-            #print('w',w)
-            
-
-            if h < img.shape[0] and w < img.shape[1]:
-                #print('img.shape[0]-h',img.shape[0]-h)
-                x1 = random.randint(0, abs(img.shape[0] - h))
-                
-                #print('x1',x1)
-                y1 = random.randint(0, abs(img.shape[1] - w))
-                #print('y1',y1)
-                if img.shape[2] == 3:
-                    img[x1:x1+h, y1:y1+w,0] = self.mean[0]
-                    img[x1:x1+h, y1:y1+w,1] = self.mean[1]
-                    img[x1:x1+h, y1:y1+w,2] = self.mean[2]
-                else:
-                    img[x1:x1+h, y1:y1+w,0] = self.mean[0]
-                return img,boxes, labels
-
-        return img,boxes, labels
-
-#---------------------Added by Xiaoyu------------------------------
-#for trying the data_aug policy proposed by Barret Zoph
-#Title: Learning Data Augmentation Strategies for Object Detection
-# def trans_coor_boxes(box_original):
-# #covnert x_min,y_min,x_max,y_max to min_y, min_x, max_y, max_x
-#     box_trans=np.zeros(box_original.shape)
-#     box_trans[:,0]=box_original[:,1]
-#     box_trans[:,1]=box_original[:,0]
-#     box_trans[:,2]=box_original[:,3]
-#     box_trans[:,3]=box_original[:,2]
-#     return box_trans
-
-# class  DataAaugmentationPolicy(object):
-#     def __init__(self, policy):
-#         self.policy = 'test'
-        
-#     def __call__(self, image, boxes=None, labels=None):
-# #         if len(boxes) == 0:
-# #             return image, boxes, labels
-# #         else:
-#         print('image',image,'boxes',boxes,'policy',self.policy)
-#         image, boxes = distort_image_with_autoaugment(image, trans_coor_boxes(boxes), 'v0')#self.policy)
-#         try:
-#             boxes=trans_coor_boxes(boxes)
-#         except:
-# #             print('error: something wrong')
-# #             print('boxes.shape',boxes.shape)
-# #             print('box',boxes)
-# #             print('box_type',type(boxes))
-# #             print('box_is_null',len(boxes))
-# #             print('labels.shape',labels.shape)
-# #             print('labels',labels)
-# #             print('img',image)
-#             boxes, labels = remove_empty_boxes(boxes, labels)
-#             return image,boxes.astype(np.float32), labels
-            
-            
-#         boxes, labels = remove_empty_boxes(boxes, labels)
-#         return image,boxes.astype(np.float32), labels
-# class Rorate_With_Boxes(object):
-#     def __init__(self,degrees,replace):
-#         self.degrees = degrees
-#         self.replace = replace
-#     def __call__(self,image, bboxes, labels = None):
-#         #Rotate the image
-#         image = rorate (image,degrees,replace)
-        
-        
