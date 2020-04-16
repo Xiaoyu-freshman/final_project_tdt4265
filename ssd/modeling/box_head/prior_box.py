@@ -37,31 +37,36 @@ class PriorBox:
                 #print('i',i,'j',j,'k',k)
             
                 # unit center x,y
-                cx = (j + 0.5) / scale_x #j means the width and corespond to cx
-                cy = (i + 0.5) / scale_y #i means the height and corespond to cy
+                #cuz the shape change from [300,300] to [240,300]
+                #so the central point should be modified
+                cx = (j + 0.5714) / scale_x #j means the width and corespond to cx
+                cy = (i + 0.4286) / scale_y #i means the height and corespond to cy
 
                 # small sized square box
-                size = self.min_sizes[k]
-                #print('min_sizes[k]',size)
-                h = size/ self.image_size[0]
-                w = size/ self.image_size[1]
+                size_h = self.min_sizes[k][0]
+                size_w = self.min_sizes[k][1]
+                h = size_h/ self.image_size[0]
+                w = size_w/ self.image_size[1]
                 #h = w = size / self.image_size
                 #print('small','cx',cx,'cy',cy,'w',w,'h',h)
                 priors.append([cx, cy, w, h])
 
                 # big sized square box
-                size = sqrt(self.min_sizes[k] * self.max_sizes[k])
+                size_h = sqrt(self.min_sizes[k][0] * self.max_sizes[k][0])
+                size_w = sqrt(self.min_sizes[k][1] * self.max_sizes[k][1])
                 #h = w = size / self.image_size
-                h = size/ self.image_size[0]
-                w = size/ self.image_size[1]
+                h = size_h/ self.image_size[0]
+                w = size_w/ self.image_size[1]
                 #print('Big','cx',cx,'cy',cy,'w',w,'h',h)
                 priors.append([cx, cy, w, h])
 
                 # change h/w ratio of the small sized box
-                size = self.min_sizes[k]
+                #size = self.min_sizes[k]
+                size_h = self.min_sizes[k][0]
+                size_w = self.min_sizes[k][1]
                 #h = w = size / self.image_size
-                h = size/ self.image_size[0]
-                w = size/ self.image_size[1]
+                h = size_h/ self.image_size[0]
+                w = size_w/ self.image_size[1]
                 for ratio in self.aspect_ratios[k]:
                     ratio = sqrt(ratio)
                     priors.append([cx, cy, w * ratio, h / ratio])
