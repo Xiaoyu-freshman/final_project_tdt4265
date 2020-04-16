@@ -14,7 +14,7 @@ def build_transforms(cfg, is_train=True):
 #             SubtractMeans(cfg.INPUT.PIXEL_MEAN),
 #             ToTensor(),
             ConvertFromInts(),
-            Expand(cfg.INPUT.PIXEL_MEAN),
+            #Expand(cfg.INPUT.PIXEL_MEAN),
             RandomSampleCrop(),
             RandomMirror(),
             ToPercentCoords(),
