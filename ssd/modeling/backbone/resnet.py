@@ -3,6 +3,55 @@ from dropblock import DropBlock2D, LinearScheduler #Try to use the dropblock lib
 import torch
 import torch.nn as nn
 import math
+
+def conv3x3(in_planes, out_planes, kernel, stride=1, groups=1, dilation=1):
+    """3x3 convolution with padding"""
+    return nn.Conv2d(in_planes, out_planes, kernel_size=kernel, stride=stride,
+                     padding=dilation, groups=groups, bias=False, dilation=dilation)
+
+class BasicBlock_modified(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, kernel=3, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None):
+        super(BasicBlock_modified, self).__init__()
+        print(inplanes,planes)
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = conv3x3(inplanes, planes, kernel)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes, kernel, stride, groups, dilation)
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+
+
 class ResNet(nn.Module):
     def __init__(self, cfg, block, layers):
         self.inplanes = 64
@@ -26,37 +75,24 @@ class ResNet(nn.Module):
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2) #38*38
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #19*19
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2) #10*10
+        self.layer4 = self._make_layer(block, 512, 2, stride=2)         #10*10
         
         #2. extra_layers (ReLU will be used in the foward function) 10thApril,Xiaoyu Zhu
-        if cfg.MODEL.BACKBONE.DEPTH>34:
-            self.ex_layer1 = self._make_extra_layers(2048,512,3,1) #5*5
-        else:
-            self.ex_layer1 = self._make_extra_layers(512,512,3,1)  #5*5
-        
-        self.ex_layer2 = self._make_extra_layers(512,256,3,1) #3*3
-        self.ex_layer3 = self._make_extra_layers(256,128,[2,3],0) #1*1
-        
-#-----------------------------------Old Version-------------------        
-#         2. extra_layers (ReLU will be used in the foward function)
-#         extra_layer=[] #This is the old_version of the arch. But I want to add some batch_norm in to the layers
 #         if cfg.MODEL.BACKBONE.DEPTH>34:
-#             extra_layer.append(torch.nn.Conv2d(in_channels=2048, out_channels=256,kernel_size=3,stride=1,padding=1))
-#         else:        
-#             extra_layer.append(torch.nn.Conv2d(in_channels=512, out_channels=256,kernel_size=3,stride=1,padding=1))
-#         #need ReLU
-#         extra_layer.append(torch.nn.Conv2d(in_channels=256, out_channels=512,kernel_size=3,stride=2,padding=1)) #5*5
-#         #need ReLU
-#         extra_layer.append(torch.nn.Conv2d(in_channels=512, out_channels=512,kernel_size=3,stride=1,padding=1))
-#         #need ReLU
-#         extra_layer.append(torch.nn.Conv2d(in_channels=512, out_channels=256,kernel_size=3,stride=2,padding=1)) #3*3
-#         #need ReLU
-#         extra_layer.append(torch.nn.Conv2d(in_channels=256, out_channels=256,kernel_size=3,stride=1,padding=1))
-#         #need ReLU
-#         extra_layer.append(torch.nn.Conv2d(in_channels=256, out_channels=128,kernel_size=3,stride=2,padding=0))  #1*1
-#         #need ReLU
-#         self.extra_layer=torch.nn.Sequential(*extra_layer)
-#-----------------------------------------------------------------
+#             self.ex_layer1 = nn.Sequential(BasicBlock_modified(2048,512))
+#             #self.ex_layer1 = self._make_extra_layers(2048,512,3,1) #5*5
+#         else:
+#             self.ex_layer1 = nn.Sequential(BasicBlock_modified(512,512))
+        self.ex_layer1 = self._make_layer(block, 512, 2, stride=2)#5*5
+            #self.ex_layer1 = self._make_extra_layers(512,512,3,1)  
+        self.ex_layer2 = self._make_layer(block, 256, 2, stride=2) #3*3
+        if cfg.MODEL.BACKBONE.DEPTH>34:
+            self.ex_layer3 = self._make_extra_layers(256*4,128,[2,3],0)
+        else:
+            self.ex_layer3 = self._make_extra_layers(256,128,[2,3],0)
+        
+        
+
         # kaiming weight normal after default initialization
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
