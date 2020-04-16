@@ -90,7 +90,7 @@ class ResNet(nn.Module):
         layers.append(torch.nn.Conv2d(in_channels=input_channels, out_channels=output_channels,kernel_size=k,stride=1,padding=1))
         layers.append(nn.ReLU(inplace=True))
         layers.append(nn.BatchNorm2d(output_channels))
-        layers.append(nn.Dropout(0.5))
+        #layers.append(nn.Dropout(0.5))
         layers.append(torch.nn.Conv2d(in_channels=output_channels, out_channels=output_channels,kernel_size=k,stride=2,padding=p)) 
         layers.append(nn.ReLU(inplace=True))
         layers.append(nn.BatchNorm2d(output_channels))
