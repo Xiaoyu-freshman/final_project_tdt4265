@@ -39,8 +39,8 @@ class PriorBox:
                 # unit center x,y
                 #cuz the shape change from [300,300] to [240,300]
                 #so the central point should be modified
-                cx = (j + 0.5714) / scale_x #j means the width and corespond to cx
-                cy = (i + 0.4286) / scale_y #i means the height and corespond to cy
+                cx = (j + 0.5) / scale_x #j means the width and corespond to cx
+                cy = (i + 0.5) / scale_y #i means the height and corespond to cy
 
                 # small sized square box
                 size_h = self.min_sizes[k][0]
