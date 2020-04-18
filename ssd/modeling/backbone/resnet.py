@@ -4,16 +4,16 @@ import torch
 import torch.nn as nn
 import math
 
-def conv3x3(in_planes, out_planes, kernel, stride=1, groups=1, dilation=1):
+def conv3x3(in_planes, out_planes, kernel, stride=1, groups=1, padding=1):
     """3x3 convolution with padding"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=kernel, stride=stride,
-                     padding=dilation, groups=groups, bias=False, dilation=dilation)
+                     padding=padding, groups=groups, bias=False)
 
 class BasicBlock_modified(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, kernel=3, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
+                 base_width=64, padding=1, dilation=1, norm_layer=None):
         super(BasicBlock_modified, self).__init__()
         print(inplanes,planes)
         if norm_layer is None:
@@ -26,7 +26,7 @@ class BasicBlock_modified(nn.Module):
         self.conv1 = conv3x3(inplanes, planes, kernel)
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes, kernel, stride, groups, dilation)
+        self.conv2 = conv3x3(planes, planes, kernel, stride,padding=padding)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
@@ -63,8 +63,8 @@ class ResNet(nn.Module):
         self.cfg = cfg
         #----------new structure called DropBlock 11sr April-------------------------
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
-            drop_prob=0.
-            block_size=5
+            drop_prob=0.5
+            block_size=3
             self.dropblock = LinearScheduler(
                 DropBlock2D(drop_prob=drop_prob, block_size=block_size),
                 start_value=0.,
@@ -74,22 +74,30 @@ class ResNet(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1) #75*75
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2) #38*38
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #19*19
-        self.layer4 = self._make_layer(block, 512, 2, stride=2)         #10*10
-        
+        #self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #19*19
+        self.ex_layer00 = self._make_layer(block, 256, layers[2], stride=2) #19*19
+        self.ex_layer0 = self._make_layer(block, 512,2 , stride=2)         #10*10
+        #self.maxpoo2 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         #2. extra_layers (ReLU will be used in the foward function) 10thApril,Xiaoyu Zhu
 #         if cfg.MODEL.BACKBONE.DEPTH>34:
 #             self.ex_layer1 = nn.Sequential(BasicBlock_modified(2048,512))
 #             #self.ex_layer1 = self._make_extra_layers(2048,512,3,1) #5*5
 #         else:
 #             self.ex_layer1 = nn.Sequential(BasicBlock_modified(512,512))
-        self.ex_layer1 = self._make_layer(block, 512, 2, stride=2)#5*5
-            #self.ex_layer1 = self._make_extra_layers(512,512,3,1)  
-        self.ex_layer2 = self._make_layer(block, 256, 2, stride=2) #3*3
-        if cfg.MODEL.BACKBONE.DEPTH>34:
-            self.ex_layer3 = self._make_extra_layers(256*4,128,[2,3],0)
-        else:
-            self.ex_layer3 = self._make_extra_layers(256,128,[2,3],0)
+        self.ex_layer1 = self._make_layer(block, 512, 1, stride=2)#5*5
+        #self.maxpoo3 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.ex_layer2 = self._make_layer(block, 256, 1, stride=2) #3*3
+        #self.maxpoo4 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)        
+        self.ex_layer3 = self._make_layer(block, 128, 1, stride=2)
+        
+#         if cfg.MODEL.BACKBONE.DEPTH>34:
+#             self.ex_layer3 = self._make_extra_layers(256*4,128,[2,3],0)
+#         else:
+#             #self.ex_layer3 = self._make_extra_layers(256,128,[2,3],0)
+#             self.ex_layer3 = self._make_layer(block, 128, 1, stride=2)
+
+
+            #BasicBlock_modified(inplanes=256, planes=128, kernel=[2,3],stride=2, padding=0)
         
         
 
@@ -148,23 +156,28 @@ class ResNet(nn.Module):
         else:
             x = self.layer1(x)  
         #print('layer1',x.shape) #80*60
+        #out_features.append(x) #Add new feature map 60*80
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer2(x))
         else:
             x = self.layer2(x) 
         #print('layer2',x.shape)  #38*38 output[0]; 30*40
         out_features.append(x)
-        x = self.layer3(x)  
+        #x = self.layer3(x)
+        x = self.ex_layer00(x)
         #print('layer3',x.shape) #19*19 output[1]; 15*20
         out_features.append(x)
-        x = self.layer4(x)  
+        x = self.ex_layer0(x)  
+        #x = self.maxpoo2(x) 
         #print('layer4',x.shape) #10*10 output[2]; 8*10
         out_features.append(x)
         #For other output: 10thApril,Xiaoyu Zhu
         x = self.ex_layer1(x) 
+        #x = self.maxpoo3(x) 
         #print('ex_layer1',x.shape) #5*5 output[3] ;4*5
         out_features.append(x) 
         x = self.ex_layer2(x) 
+        #x = self.maxpoo4(x) 
         #print('ex_layer2',x.shape) #3*2 output[4] ;2*3
         out_features.append(x) 
         x = self.ex_layer3(x)  
