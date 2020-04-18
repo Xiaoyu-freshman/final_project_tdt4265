@@ -7,12 +7,14 @@ from .Data_augmentation_policy import DataAaugmentationPolicy
 def build_transforms(cfg, is_train=True):
     if is_train:
         transform = [
-            #ConvertFromInts(),
-#             DataAaugmentationPolicy(),
-#             ToPercentCoords(), 
-#             Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
-#             SubtractMeans(cfg.INPUT.PIXEL_MEAN),
-#             ToTensor(),
+#             #ConvertFromInts(),
+#              DataAaugmentationPolicy(),
+#              ConvertFromInts(),
+#              RandomSampleCrop(),
+#              ToPercentCoords(), 
+#              Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
+#              SubtractMeans(cfg.INPUT.PIXEL_MEAN),
+#              ToTensor(),
             ConvertFromInts(),
             #Expand(cfg.INPUT.PIXEL_MEAN),
             RandomSampleCrop(),
