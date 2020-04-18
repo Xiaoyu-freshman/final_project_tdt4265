@@ -74,8 +74,7 @@ class ResNet(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1) #75*75
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2) #38*38
-        #self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #19*19
-        self.ex_layer00 = self._make_layer(block, 256, layers[2], stride=2) #19*19
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #19*19
         self.ex_layer0 = self._make_layer(block, 512,2 , stride=2)         #10*10
         #self.maxpoo2 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         #2. extra_layers (ReLU will be used in the foward function) 10thApril,Xiaoyu Zhu
@@ -163,8 +162,7 @@ class ResNet(nn.Module):
             x = self.layer2(x) 
         #print('layer2',x.shape)  #38*38 output[0]; 30*40
         out_features.append(x)
-        #x = self.layer3(x)
-        x = self.ex_layer00(x)
+        x = self.layer3(x)
         #print('layer3',x.shape) #19*19 output[1]; 15*20
         out_features.append(x)
         x = self.ex_layer0(x)  
