@@ -6,6 +6,7 @@ from ssd.modeling.backbone.basic import BasicModel
 from ssd.modeling.box_head.box_head import SSDBoxHead
 from ssd.utils.model_zoo import load_state_dict_from_url
 from ssd.modeling.backbone.resnet import ResNet
+from ssd.modeling.backbone.resnest1 import ResNest
 from torchvision.models.resnet import BasicBlock,Bottleneck
 from ssd import torch_utils
 
@@ -64,5 +65,14 @@ def build_backbone(cfg):
             pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
             model_dict.update(pretrained_dict)
             model.load_state_dict(model_dict)
+    if backbone_name == "resnest":
+        model = ResNest(cfg,BasicBlock)
+#         if cfg.MODEL.BACKBONE.PRETRAINED:
+#             pretrained_dict = torch.hub.load_state_dict_from_url(resnest_model_urls['resnest50'], progress=True, check_hash=True)
+#             model_dict = model.state_dict()
+#             pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+#             model_dict.update(pretrained_dict)
+#             model.load_state_dict(model_dict)
+        
             
         return model
