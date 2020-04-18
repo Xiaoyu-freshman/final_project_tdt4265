@@ -35,6 +35,7 @@ class SSDDetector(nn.Module):
 
 def build_backbone(cfg):
     backbone_name = cfg.MODEL.BACKBONE.NAME
+    
     print(backbone_name)
     if backbone_name == "basic":
         model = BasicModel(cfg)
@@ -65,6 +66,7 @@ def build_backbone(cfg):
             pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
             model_dict.update(pretrained_dict)
             model.load_state_dict(model_dict)
+        return model
     if backbone_name == "resnest":
         model = ResNest(cfg,BasicBlock)
 #         if cfg.MODEL.BACKBONE.PRETRAINED:
