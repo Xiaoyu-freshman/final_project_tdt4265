@@ -41,14 +41,14 @@ class  DataAaugmentationPolicy(object):
                 A.RandomSunFlare(flare_roi=(0, 0, 1, 0.5), angle_lower=0, angle_upper=1, num_flare_circles_lower=6, num_flare_circles_upper=10, src_radius=400, src_color=(255, 255, 255), always_apply=False, p=0.5),
                 A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=20, drop_width=1, drop_color=(200, 200, 200), blur_value=7, brightness_coefficient=0.7, rain_type=None, always_apply=False, p=0.5)
             ]),
-            A.RandomSizedBBoxSafeCrop(720, 960, erosion_rate=0.0, interpolation=1, always_apply=False, p=1),
+           #A.RandomSizedBBoxSafeCrop(720, 960, erosion_rate=0.0, interpolation=1, always_apply=False, p=1),
             #A.Resize(300, 300, interpolation=1, always_apply=False, p=1)
         ])
         #Spatial_Level
         trans_rotate_level = A.Compose([
             A.OneOf([
-#                 A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.5),
-#                 A.RandomRotate90(always_apply=False, p=0.5),
+                A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.5),
+                A.RandomRotate90(always_apply=False, p=0.5),
                 A.VerticalFlip(always_apply=False, p=0.5), 
                 A.HorizontalFlip(always_apply=False, p=0.5)
             ]),
