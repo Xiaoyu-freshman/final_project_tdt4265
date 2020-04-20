@@ -71,32 +71,19 @@ class ResNet(nn.Module):
                 stop_value=drop_prob,
                 nr_steps=5
             )
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1) #75*75
         self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2) #38*38
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #19*19
-        self.ex_layer0 = self._make_layer(block, 512,2 , stride=2)         #10*10
-        #self.maxpoo2 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2) #75*75
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #38*38
         #2. extra_layers (ReLU will be used in the foward function) 10thApril,Xiaoyu Zhu
-#         if cfg.MODEL.BACKBONE.DEPTH>34:
-#             self.ex_layer1 = nn.Sequential(BasicBlock_modified(2048,512))
-#             #self.ex_layer1 = self._make_extra_layers(2048,512,3,1) #5*5
-#         else:
-#             self.ex_layer1 = nn.Sequential(BasicBlock_modified(512,512))
-        self.ex_layer1 = self._make_layer(block, 512, 1, stride=2)#5*5
-        #self.maxpoo3 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.ex_layer2 = self._make_layer(block, 256, 1, stride=2) #3*3
-        #self.maxpoo4 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)        
-        self.ex_layer3 = self._make_layer(block, 128, 1, stride=2)
+        #self.ex_conv2 = self._make_extra_layers(256,256,3,2,1) 
+        self.ex_layer00 = self._make_layer(block, 512,2 , stride=2) #19*19
+        self.ex_layer0 = self._make_layer(block, 256,2 , stride=2)         #10*10
+        self.ex_layer1 = self._make_layer(block, 256, 2, stride=2)#5*5
+        self.ex_layer2 = self._make_layer(block, 128, 2, stride=2) #3*3
+        self.ex_layer3 = self._make_layer(block, 128, 2, stride=2) #1*2
+        #self.ex_conv3 = self._make_extra_layers(128,64,[1,2],1,0)
         
-#         if cfg.MODEL.BACKBONE.DEPTH>34:
-#             self.ex_layer3 = self._make_extra_layers(256*4,128,[2,3],0)
-#         else:
-#             #self.ex_layer3 = self._make_extra_layers(256,128,[2,3],0)
-#             self.ex_layer3 = self._make_layer(block, 128, 1, stride=2)
 
-
-            #BasicBlock_modified(inplanes=256, planes=128, kernel=[2,3],stride=2, padding=0)
         
         
 
@@ -128,15 +115,11 @@ class ResNet(nn.Module):
             layers.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers)
-    def _make_extra_layers(self, input_channels, output_channels,k, p): #10thApril,Xiaoyu Zhu
+    def _make_extra_layers(self, input_channels, output_channels,k,s, p): #10thApril,Xiaoyu Zhu
         layers = []
-        layers.append(torch.nn.Conv2d(in_channels=input_channels, out_channels=output_channels,kernel_size=k,stride=1,padding=1))
-        layers.append(nn.ReLU(inplace=True))
+        layers.append(torch.nn.Conv2d(in_channels=input_channels, out_channels=output_channels,kernel_size=k,stride=s,padding=p))
         layers.append(nn.BatchNorm2d(output_channels))
-        #layers.append(nn.Dropout(0.5))
-        layers.append(torch.nn.Conv2d(in_channels=output_channels, out_channels=output_channels,kernel_size=k,stride=2,padding=p)) 
         layers.append(nn.ReLU(inplace=True))
-        layers.append(nn.BatchNorm2d(output_channels))
         return nn.Sequential(*layers)
     
     def forward(self, x):
@@ -148,7 +131,7 @@ class ResNet(nn.Module):
         #print('self.conv1',x.shape) #150*150; 160*120
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x) 
+        #x = self.maxpool(x) 
         #print('self.maxpool',x.shape) #75*75; 80*60
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer1(x))#added 11st April
@@ -159,27 +142,28 @@ class ResNet(nn.Module):
         if self.cfg.MODEL.BACKBONE.DROP_BLOCK:
             x = self.dropblock(self.layer2(x))
         else:
-            x = self.layer2(x) 
-        #print('layer2',x.shape)  #38*38 output[0]; 30*40
-        out_features.append(x)
+            x = self.layer2(x)
         x = self.layer3(x)
-        #print('layer3',x.shape) #19*19 output[1]; 15*20
+        #x = self.ex_conv2(x)
+        #print('self.ex_conv2(x)',x.shape)  #38*38 output[0]; 30*40
+        out_features.append(x)
+        
+        x = self.ex_layer00(x) #19*19 output[1]; 15*20
+        #print('self.ex_layer00(x)',x.shape)
         out_features.append(x)
         x = self.ex_layer0(x)  
-        #x = self.maxpoo2(x) 
-        #print('layer4',x.shape) #10*10 output[2]; 8*10
+        #print('self.ex_layer0',x.shape) #10*10 output[2]; 8*10
         out_features.append(x)
         #For other output: 10thApril,Xiaoyu Zhu
         x = self.ex_layer1(x) 
-        #x = self.maxpoo3(x) 
         #print('ex_layer1',x.shape) #5*5 output[3] ;4*5
         out_features.append(x) 
         x = self.ex_layer2(x) 
-        #x = self.maxpoo4(x) 
         #print('ex_layer2',x.shape) #3*2 output[4] ;2*3
         out_features.append(x) 
         x = self.ex_layer3(x)  
-        #print('ex_layer3',x.shape) #1*1 output[5] 
+        #x = self.ex_conv3(x)
+        #print('self.ex_conv3',x.shape) #1*1 output[5] 
         out_features.append(x) 
 #-----------------------------------Old Version-------------------        
 #         #For other outputs:
