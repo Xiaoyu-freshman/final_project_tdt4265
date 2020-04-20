@@ -30,7 +30,6 @@ def build_transforms(cfg, is_train=True):
                 ToTensor(),]
         elif policy == 'xiaoyu':
             transform = [
-                ConvertFromInts(),
                 DataAaugmentationPolicy(cfg),
                 ConvertFromInts(),
                 RandomSampleCrop(),
