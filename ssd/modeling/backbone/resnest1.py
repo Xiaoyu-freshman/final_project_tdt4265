@@ -54,12 +54,15 @@ class BasicBlock_modified(nn.Module):
 
 class ResNest(nn.Module):
     def __init__(self, cfg, block):
-        self.inplanes = 1024
+        self.inplanes = 512
         super(ResNest, self).__init__()
         self.cfg = cfg
         net = resnest50(pretrained=True)
-        self.to_layer2 = nn.Sequential(*list(net.children())[:-4]) #38*38
-        self.to_layer3 = nn.Sequential(*list(net.children())[-4])  #19*19
+        self.before_maxpool = nn.Sequential(*list(net.children())[:3]) 
+        #self.ex_conv = nn.Sequential(torch.nn.Conv2d(in_channels=input_channels, out_channels=output_channels,kernel_size=k,stride=1,padding=1))
+        self.to_layer3 = nn.Sequential(*list(net.children())[4:-4])  #75*75
+        self.ex_layer000 = self._make_layer(block, 1024, 1 , stride=2) #38*38
+        self.ex_layer00 = self._make_layer(block, 512, 1 , stride=2) #19*19
         self.ex_layer0 = self._make_layer(block, 512, 1 , stride=2)         #10*10
         self.ex_layer1 = self._make_layer(block, 512, 1, stride=2)#5*5
         self.ex_layer2 = self._make_layer(block, 256, 1, stride=2) #3*3
@@ -69,8 +72,11 @@ class ResNest(nn.Module):
         # kaiming weight normal after default initialization
         ttt=0
         for m in self.modules():
+#             print('MMMMMMMMMMMMM',m)
+#             print('ttt',ttt)
             ttt+=1 #Control not initialize the pre-trained parmeters.
-            if ttt>199:
+            
+            if ttt>114: #198 for 3 layers
                 if isinstance(m, nn.Conv2d):
                     n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                     m.weight.data.normal_(0, math.sqrt(2. / n))
@@ -111,14 +117,16 @@ class ResNest(nn.Module):
     def forward(self, x):
         out_features = []
         #print('Input',x.shape) #Original 300*300; For rectange input size :320*240
-        x = self.to_layer2(x) #38*38 output[0];30*40
-        #print('self.to_layer2',x.shape)
+        x = self.before_maxpool(x)
+        x = self.to_layer3(x) #38*38 output[0];30*40
+        x = self.ex_layer000(x)
+        #print('self.to_layer3',x.shape)
         out_features.append(x)
-        x = self.to_layer3(x) #19*19 output[1]; 15*20
-        #print('self.to_layer3',x.shape) 
+        x = self.ex_layer00(x) #19*19 output[1]; 15*20
+        #print('self.ex_layer00',x.shape) 
         out_features.append(x)
         x = self.ex_layer0(x)  
-        #print('layer4',x.shape) #10*10 output[2]; 8*10
+        #print('ex_layer0',x.shape) #10*10 output[2]; 8*10
         out_features.append(x)
         #For other output: 10thApril,Xiaoyu Zhu
         x = self.ex_layer1(x) 
