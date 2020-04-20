@@ -20,6 +20,7 @@ cfg.MODEL.BACKBONE.NAME = 'vgg'
 cfg.MODEL.BACKBONE.OUT_CHANNELS = (512, 1024, 512, 256, 256, 256)
 cfg.MODEL.BACKBONE.PRETRAINED = False
 cfg.MODEL.BACKBONE.AFTER_TRAINED = False
+cfg.MODEL.BACKBONE.AFTER_TRAINED_File = ''
 cfg.MODEL.BACKBONE.INPUT_CHANNELS = 3
 cfg.MODEL.BACKBONE.DEPTH = 50
 cfg.MODEL.BACKBONE.DROP_BLOCK = False
@@ -78,6 +79,9 @@ cfg.DATA_LOADER = CN()
 # Number of data loading threads
 cfg.DATA_LOADER.NUM_WORKERS = 8
 cfg.DATA_LOADER.PIN_MEMORY = True
+cfg.DATA_LOADER.DATA_AUGMENTATION = 'Naive'
+cfg.DATA_LOADER.AUGMENTATION_WEATHER = False
+cfg.DATA_LOADER.AUGMENTATION_SPATIAL_LEVEL = False
 
 # ---------------------------------------------------------------------------- #
 # Solver - The same as optimizer
