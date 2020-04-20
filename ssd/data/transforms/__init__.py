@@ -6,24 +6,39 @@ from .Data_augmentation_policy import DataAaugmentationPolicy
 
 def build_transforms(cfg, is_train=True):
     if is_train:
-        transform = [
-            #ConvertFromInts(),
-             DataAaugmentationPolicy(),
-             ConvertFromInts(),
-             RandomSampleCrop(),
-             ToPercentCoords(), 
-             Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
-             SubtractMeans(cfg.INPUT.PIXEL_MEAN),
-             ToTensor(),
-#             ConvertFromInts(),
-#             #Expand(cfg.INPUT.PIXEL_MEAN),
-#             RandomSampleCrop(),
-#             RandomMirror(),
-#             ToPercentCoords(),
-#             Resize(cfg.INPUT.IMAGE_SIZE),
-#             SubtractMeans(cfg.INPUT.PIXEL_MEAN),
-#             ToTensor(),
-        ]
+        policy = cfg.DATA_LOADER.DATA_AUGMENTATION
+        if policy == 'Naive':
+            transform = [
+                ConvertFromInts(),
+                #Expand(cfg.INPUT.PIXEL_MEAN),
+                RandomSampleCrop(),
+                RandomMirror(),
+                ToPercentCoords(),
+                Resize(cfg.INPUT.IMAGE_SIZE),
+                SubtractMeans(cfg.INPUT.PIXEL_MEAN),
+                ToTensor(),]
+        elif policy == 'lufficc':
+            transform = [
+                ConvertFromInts(),
+                PhotometricDistort(),
+                Expand(cfg.INPUT.PIXEL_MEAN),
+                RandomSampleCrop(),
+                RandomMirror(),
+                ToPercentCoords(),
+                Resize(cfg.INPUT.IMAGE_SIZE),
+                SubtractMeans(cfg.INPUT.PIXEL_MEAN),
+                ToTensor(),]
+        elif policy == 'xiaoyu':
+            transform = [
+                ConvertFromInts(),
+                DataAaugmentationPolicy(cfg),
+                ConvertFromInts(),
+                RandomSampleCrop(),
+                ToPercentCoords(), 
+                Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
+                SubtractMeans(cfg.INPUT.PIXEL_MEAN),
+                ToTensor(),]
+            
     else:
         transform = [
             Resize(cfg.INPUT.IMAGE_SIZE),
