@@ -1,0 +1,34 @@
+MODEL:
+    NUM_CLASSES: 5
+    BACKBONE:
+        NAME: 'resnest' #'resnet'   #vgg   #'basic'
+        PRETRAINED: True
+        OUT_CHANNELS: [1024,512,512, 512, 256, 128] #[128, 256, 512, 512, 256, 128] #[512,1024,2048,2048, 1024, 512]      
+        INPUT_CHANNELS: 3
+        DEPTH: 34
+        DROP_BLOCK: False
+    PRIORS:
+        FEATURE_MAPS: [[30,40], [15,20], [8,10], [4,5], [2,3], [1,2]]
+        STRIDES: [[8,8], [16,16], [30,32], [60,64], [120,106], [240,160]]
+        MIN_SIZES: [[24,32], [48,64], [89,119], [130,173], [171,228], [212,282]] 
+        MAX_SIZES: [[48,64], [89,119], [130,173], [171,228], [212,282], [252,336]]
+        ASPECT_RATIOS: [[2], [2, 3], [2, 3], [2, 3], [2], [2]]
+        BOXES_PER_LOCATION: [4, 6, 6, 6, 4, 4]
+INPUT:
+    IMAGE_SIZE: [240,320]  #[H,W]
+DATASETS:
+    TRAIN: ("waymo_train",)
+    TEST: ("waymo_val", )
+    AUG_POLICY: 'v1'
+DATA_LOADER:
+    NUM_WORKERS: 8
+SOLVER:
+    CHOICE: 'Adam'
+    MAX_ITER:  50000
+    LR_STEPS: [40000, 45000]
+    GAMMA: 0.1
+    BATCH_SIZE: 8
+    LR: 1e-4
+    WARMUP_ITERS: 200
+OUTPUT_DIR: 'outputs/Res34_20_Apr/Resnest_no_maxpool_Adam'  
+DATASET_DIR: "datasets"
