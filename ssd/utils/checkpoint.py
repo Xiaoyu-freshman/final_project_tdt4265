@@ -21,6 +21,7 @@ class CheckPointer:
         self.save_dir = save_dir
         self.save_to_disk = save_to_disk
         self.after_trained = cfg.MODEL.BACKBONE.AFTER_TRAINED
+        self.after_file_dir = cfg.MODEL.BACKBONE.AFTER_TRAINED_File
         if logger is None:
             logger = logging.getLogger(__name__)
         self.logger = logger
@@ -56,12 +57,12 @@ class CheckPointer:
             return {}
         #modeifed by Xiaoyu to load the pre-trained parameters on waymo-dataset. 7th April 2020
         elif not f and self.after_trained:
-            after_file_dir= "outputs/resnet_50_New_augment_12H_1/model_final.pth"
-            self.logger.info("Loading pretrained on waymo from {}".format(after_file_dir))
+            #self.after_file_dir= "outputs//Res34_19_Apr/Res34_Adam/model_final.pth"#resnet_50_New_augment_12H_1/model_final.pth"
+            self.logger.info("Loading pretrained on waymo from {}".format(self.after_file_dir))
             model = self.model
-            checkpoint=torch.load(after_file_dir, map_location=torch.device("cpu"))
+            checkpoint=torch.load(self.after_file_dir, map_location=torch.device("cpu"))
             model.load_state_dict(checkpoint.pop("model"))
-            return checkpoint
+            return {}#checkpoint
         
         
         self.logger.info("Loading checkpoint from {}".format(f))
