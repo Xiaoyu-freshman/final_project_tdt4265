@@ -10,7 +10,6 @@ def build_transforms(cfg, is_train=True):
         if policy == 'Naive':
             transform = [
                 ConvertFromInts(),
-                #Expand(cfg.INPUT.PIXEL_MEAN),
                 RandomSampleCrop(),
                 RandomMirror(),
                 ToPercentCoords(),
