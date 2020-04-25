@@ -76,12 +76,19 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #38*38
         #2. extra_layers (ReLU will be used in the foward function) 10thApril,Xiaoyu Zhu
         #self.ex_conv2 = self._make_extra_layers(256,256,3,2,1) 
-        self.ex_layer00 = self._make_layer(block, 512,2 , stride=2) #19*19
-        self.ex_layer0 = self._make_layer(block, 256,2 , stride=2)         #10*10
-        self.ex_layer1 = self._make_layer(block, 256, 2, stride=2)#5*5
-        self.ex_layer2 = self._make_layer(block, 128, 2, stride=2) #3*3
-        self.ex_layer3 = self._make_layer(block, 128, 2, stride=2) #1*2
-        #self.ex_conv3 = self._make_extra_layers(128,64,[1,2],1,0)
+        if self.cfg.MODEL.BACKBONE.DEPTH< 50:
+            self.ex_layer00 = self._make_layer(block, 512,2 , stride=2) #19*19
+            self.ex_layer0 = self._make_layer(block, 256,2 , stride=2)         #10*10
+            self.ex_layer1 = self._make_layer(block, 256, 2, stride=2)#5*5
+            self.ex_layer2 = self._make_layer(block, 128, 2, stride=2) #3*3
+            self.ex_layer3 = self._make_layer(block, 128, 2, stride=2) #1*2
+            #self.ex_conv3 = self._make_extra_layers(128,64,[1,2],1,0)
+        else:
+            self.ex_layer00 = self._make_layer(block, 512,1 , stride=2) #19*19
+            self.ex_layer0 = self._make_layer(block, 256,1 , stride=2)         #10*10
+            self.ex_layer1 = self._make_layer(block, 256, 1, stride=2)#5*5
+            self.ex_layer2 = self._make_layer(block, 128, 1, stride=2) #3*3
+            self.ex_layer3 = self._make_layer(block, 128, 1, stride=2) #1*2
         
 
         
