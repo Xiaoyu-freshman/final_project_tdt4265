@@ -2,7 +2,7 @@ from ssd.modeling.box_head.prior_box import PriorBox
 from .target_transform import SSDTargetTransform
 from .transforms import *
 from .Data_augmentation_policy import DataAaugmentationPolicy
-
+from .Data_augmentation_paper import Augment_paper
 
 def build_transforms(cfg, is_train=True):
     if is_train:
@@ -32,7 +32,15 @@ def build_transforms(cfg, is_train=True):
             transform = [
                 DataAaugmentationPolicy(cfg),
                 ConvertFromInts(),
-                RandomSampleCrop(),
+#                 RandomSampleCrop(),
+                ToPercentCoords(), 
+                Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
+                SubtractMeans(cfg.INPUT.PIXEL_MEAN),
+                ToTensor(),]
+        elif policy == 'paper':
+            transform = [
+                Augment_paper(cfg),
+                ConvertFromInts(),
                 ToPercentCoords(), 
                 Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
                 SubtractMeans(cfg.INPUT.PIXEL_MEAN),
