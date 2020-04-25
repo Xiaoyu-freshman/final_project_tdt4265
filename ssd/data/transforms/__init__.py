@@ -32,7 +32,6 @@ def build_transforms(cfg, is_train=True):
             transform = [
                 DataAaugmentationPolicy(cfg),
                 ConvertFromInts(),
-#                 RandomSampleCrop(),
                 ToPercentCoords(), 
                 Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
                 SubtractMeans(cfg.INPUT.PIXEL_MEAN),
