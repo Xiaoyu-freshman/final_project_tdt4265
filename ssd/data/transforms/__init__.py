@@ -10,7 +10,6 @@ def build_transforms(cfg, is_train=True):
         if policy == 'Naive':
             transform = [
                 ConvertFromInts(),
-                #Expand(cfg.INPUT.PIXEL_MEAN),
                 RandomSampleCrop(),
                 RandomMirror(),
                 ToPercentCoords(),
@@ -32,7 +31,6 @@ def build_transforms(cfg, is_train=True):
             transform = [
                 DataAaugmentationPolicy(cfg),
                 ConvertFromInts(),
-#                 RandomSampleCrop(),
                 ToPercentCoords(), 
                 Resize(cfg.INPUT.IMAGE_SIZE), #Resize need topercent fistly.
                 SubtractMeans(cfg.INPUT.PIXEL_MEAN),
