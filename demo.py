@@ -30,7 +30,7 @@ def run_demo(cfg, ckpt, score_threshold, images_dir: pathlib.Path, output_dir: p
 
     model = SSDDetector(cfg)
     model = torch_utils.to_cuda(model)
-    checkpointer = CheckPointer(model, save_dir=cfg.OUTPUT_DIR)
+    checkpointer = CheckPointer(cfg,model, save_dir=cfg.OUTPUT_DIR)
     checkpointer.load(ckpt, use_latest=ckpt is None)
     weight_file = ckpt if ckpt else checkpointer.get_checkpoint_file()
     print('Loaded weights from {}'.format(weight_file))
