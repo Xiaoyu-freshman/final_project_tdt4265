@@ -1,0 +1,36 @@
+MODEL:
+    NUM_CLASSES: 5
+    BACKBONE:
+        NAME: 'resnet'   
+        PRETRAINED: False
+        OUT_CHANNELS: [512, 512, 256, 256, 128, 128]   
+        INPUT_CHANNELS: 3
+        DEPTH: 34
+        DROP_BLOCK: False
+        AFTER_TRAINED: True
+        AFTER_TRAINED_File: 'outputs/waymo_final_model/model_final.pth' 
+    PRIORS:
+        FEATURE_MAPS: [[30,40], [15,20], [8,10], [4,5], [2,3], [1,2]]
+        STRIDES: [[8,8], [16,16], [30,32], [60,64], [120,106], [240,160]]
+        MIN_SIZES: [[17,23], [36,48], [80,106], [123,164], [166,221], [208,278]]
+        MAX_SIZES: [[36,48], [80,106], [123,164], [166,221], [208,278], [252,336]]
+        ASPECT_RATIOS: [[2], [2,3], [2, 3], [2, 3], [2], [2]]
+        BOXES_PER_LOCATION: [4, 6, 6, 6, 4, 4]
+INPUT:
+    IMAGE_SIZE: [240,320]  #[H,W]
+        
+DATASETS:
+    TRAIN: ("tdt4265_train",)
+    TEST: ("tdt4265_val", )
+DATA_LOADER:
+    DATA_AUGMENTATION: 'lufficc'
+SOLVER:
+    CHOICE: 'SGD'
+    MAX_ITER:  30000
+    LR_STEPS: [20000, 25000]
+    GAMMA: 0.1
+    BATCH_SIZE: 16
+    LR: 2e-3
+    WARMUP_ITERS: 1000
+OUTPUT_DIR: 'outputs/tdt4265_final_model'
+DATASET_DIR: "datasets"
