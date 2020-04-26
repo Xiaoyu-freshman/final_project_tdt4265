@@ -19,6 +19,7 @@ has been changed.
     Some items have been added:
     *MODEL.BACKBONE.AFTER_TRAINED = False
     (when its value =True, the checkpoint.py can import models pre-trained on Waymo Data)
+    *MODEL.BACKBONE.AFTER_TRAINED_File = ''
 4. Added the support for more choices of Data Augmentaion.
     Some items have been added:
     *DATA_LOADER.DATA_AUGMENTATION = 'Naive'
