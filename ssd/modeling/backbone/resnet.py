@@ -72,8 +72,9 @@ class ResNet(nn.Module):
                 nr_steps=5
             )
         self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2) #75*75
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=1) #75*75
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2) #38*38
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
         #2. extra_layers (ReLU will be used in the foward function) 10thApril,Xiaoyu Zhu
         #self.ex_conv2 = self._make_extra_layers(256,256,3,2,1) 
         if self.cfg.MODEL.BACKBONE.DEPTH< 50:
@@ -151,6 +152,7 @@ class ResNet(nn.Module):
         else:
             x = self.layer2(x)
         x = self.layer3(x)
+        x = self.layer4(x)
         #x = self.ex_conv2(x)
         #print('self.ex_conv2(x)',x.shape)  #38*38 output[0]; 30*40
         out_features.append(x)
