@@ -1,3 +1,14 @@
+'''
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This build.py code has been modified by Xiaoyu Zhu for TDT4265 final project.
+
+*Additional Support:
+1. Added the support for different optimizer.
+   
+
+'''
+
 import torch
 from .lr_scheduler import WarmupMultiStepLR
 
