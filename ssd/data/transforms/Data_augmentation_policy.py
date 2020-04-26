@@ -1,10 +1,22 @@
-#------------A little function to conver corrodinate-----------
 '''
-Defined by Xiaoyu
-For use this augmentation method, since the order of the element in bboxes is
-min_y, min_x, max_y, max_x
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This Data_augmentation_policy.py code has been created by Xiaoyu Zhu for TDT4265 final project.
+*with the referencing of :
+1. Albumentations official guide: https://github.com/albumentations-team/albumentations#pypi
+2. Paper: Learning Data Augmentation Strategies for Object Detection
+*Functions:
+1. get_aug() borrowed from Albumentations official guide
+
+*Additional Support:
+1.This is a private approach of augmention based on the intuition from on the paper.
+According to the paper, I divided the augmentation into 2 levels: Color-Level, Spatial-Level.
+(when self.cfg.DATA_LOADER.AUGMENTATION_SPATIAL_LEVEL= True, the Spatial-Level operations will be conducted.)
+2. Added the support of Weather Operation, which is really cool.
+    (it works when self.cfg.DATA_LOADER.AUGMENTATION_WEATHER= True)
 
 '''
+
 from urllib.request import urlopen
 import os
 
@@ -49,7 +61,6 @@ class  DataAaugmentationPolicy(object):
                     A.RandomSizedBBoxSafeCrop(480, 640, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
                     A.RandomSizedBBoxSafeCrop(240, 320, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
                 ]),
-                #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
             ])
         else:
             trans_color_level = A.Compose([
@@ -60,9 +71,7 @@ class  DataAaugmentationPolicy(object):
                     A.RandomSizedBBoxSafeCrop(720, 960, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
                     A.RandomSizedBBoxSafeCrop(480, 640, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
                     A.RandomSizedBBoxSafeCrop(240, 320, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-                ]),
-                #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-                
+                ]),                
             ])
         #Spatial_Level
         if self.cfg.DATA_LOADER.AUGMENTATION_SPATIAL_LEVEL:
