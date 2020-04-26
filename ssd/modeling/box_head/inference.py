@@ -1,3 +1,14 @@
+'''
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This prior_box code has been modified by Xiaoyu Zhu for TDT4265 final project.
+*with the referencing of the discussions on Piazza.
+
+*Additional Support:
+1. Added the support for rectangle shape such as [240,320] ([Height,Weight]).
+
+'''
+
 import torch
 from ssd.container import Container
 from ssd.utils.nms import batched_nms
