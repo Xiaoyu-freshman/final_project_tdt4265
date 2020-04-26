@@ -1,8 +1,18 @@
-#------------A little function to conver corrodinate-----------
 '''
-Defined by Xiaoyu
-For use this augmentation method, since the order of the element in bboxes is
-min_y, min_x, max_y, max_x
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This Data_augmentation_paper.py code has been created by Xiaoyu Zhu for TDT4265 final project.
+*with the referencing of :
+1. Albumentations official guide: https://github.com/albumentations-team/albumentations#pypi
+2. Paper: Learning Data Augmentation Strategies for Object Detection
+*Functions:
+1. get_aug() borrowed from Albumentations official guide
+
+*Additional Support:
+1. Added the private way of implementing the polices mentioned in the paper. Because of Albumentations doesn't have the operation which only changes bounding boxes, there are only color-level and spatial-level operation. 
+I tried to use RandomSizedBBoxSafeCrop() to take place the only-bbox-level operation.
+2. Added the support of Weather Operation, which is really cool.
+    (it works when self.cfg.DATA_LOADER.AUGMENTATION_WEATHER= True)
 
 '''
 from urllib.request import urlopen
@@ -35,12 +45,10 @@ class  Augment_paper(object):
         sub1=A.Compose([
             A.HorizontalFlip(always_apply=False, p=0.6),
             A.Equalize(p=0.8),
-            #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
         ])
         sub2=A.Compose([
             A.VerticalFlip(always_apply=False, p=0.5),
             A.Cutout(num_holes=8, max_h_size=8, max_w_size=8, fill_value=255, always_apply=False, p=0.8),
-            #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
         ])
         sub3=A.Compose([
             A.OneOf([
@@ -49,15 +57,14 @@ class  Augment_paper(object):
                 A.RandomSizedBBoxSafeCrop(240, 320, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
             ]),
             A.VerticalFlip(always_apply=False, p=0.6),
-            #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
 
         ])
         sub4=A.Compose([
             A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.6),
             A.HueSaturationValue(hue_shift_limit=50, sat_shift_limit=50, val_shift_limit=50, always_apply=False, p=1),
-            #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
+            
         ])
-        #sub5=A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
+        
         
         if self.cfg.DATA_LOADER.AUGMENTATION_WEATHER:
             trans_color_level = A.Compose([
@@ -81,73 +88,7 @@ class  Augment_paper(object):
                 sub3,
                 sub4
             ])
-#         trans_color_level = A.OneOf([
-#             A.Compose([
-#                 A.HorizontalFlip(always_apply=False, p=0.6),
-#                 A.Equalize(p=0.8),
-#                 A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-#             ]),
-#             A.Compose([
-#                 A.VerticalFlip(always_apply=False, p=0.5),
-#                 A.Cutout(num_holes=8, max_h_size=64, max_w_size=64, fill_value=255, always_apply=False, p=0.8),
-#                 A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-#             ]),
-#             A.Compose([
-#                 A.OneOf([
-#                     A.RandomSizedBBoxSafeCrop(720, 960, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                     A.RandomSizedBBoxSafeCrop(480, 640, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                     A.RandomSizedBBoxSafeCrop(240, 320, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                 ]),
-#                 A.VerticalFlip(always_apply=False, p=0.6),
-#                 A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-                
-#             ]),
-#             A.Compose([
-#                 A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.6),
-#                 A.HueSaturationValue(hue_shift_limit=50, sat_shift_limit=50, val_shift_limit=50, always_apply=False, p=1),
-#                 A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-#             ]),
-#             A.Compose([
-#                 A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-#             ])
-#         ])
-#                 A.OneOf([
-#                     A.RandomFog(fog_coef_lower=0.3, fog_coef_upper=0.7, alpha_coef=0.08, always_apply=False, p=0.5),
-#                     A.RandomSnow(snow_point_lower=0.1, snow_point_upper=0.3, brightness_coeff=2.5, always_apply=False, p=0.5),
-#                     A.RandomSunFlare(flare_roi=(0, 0, 1, 0.5), angle_lower=0, angle_upper=1, num_flare_circles_lower=6, num_flare_circles_upper=10, src_radius=400, src_color=(255, 255, 255), always_apply=False, p=0.5),
-#                     A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=20, drop_width=1, drop_color=(200, 200, 200), blur_value=7, brightness_coefficient=0.7, rain_type=None, always_apply=False, p=0.5)
-#                 ]),
-#                 A.OneOf([
-#                     A.RandomSizedBBoxSafeCrop(720, 960, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                     A.RandomSizedBBoxSafeCrop(480, 640, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                     A.RandomSizedBBoxSafeCrop(240, 320, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                 ]),
-#                 #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-#             ])
-#         else:
-#             trans_color_level = A.Compose([
-#                 A.Cutout(num_holes=20, max_h_size=64, max_w_size=64, fill_value=255, always_apply=False, p=0.5),
-#                 A.Equalize(p=1),
-#                 A.HueSaturationValue(hue_shift_limit=50, sat_shift_limit=50, val_shift_limit=50, always_apply=False, p=0.5),
-#                 A.OneOf([
-#                     A.RandomSizedBBoxSafeCrop(720, 960, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                     A.RandomSizedBBoxSafeCrop(480, 640, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                     A.RandomSizedBBoxSafeCrop(240, 320, erosion_rate=0.0, interpolation=1, always_apply=False, p=0.5),
-#                 ]),
-#                 #A.Resize(240, 320, interpolation=1, always_apply=False, p=1)
-                
-#             ])
-#         #Spatial_Level
-#         if self.cfg.DATA_LOADER.AUGMENTATION_SPATIAL_LEVEL:
-#             trans_rotate_level = A.Compose([
-#                 A.OneOf([
-#                     A.Rotate(limit=90, interpolation=1, border_mode=4, value=None, mask_value=None, always_apply=False, p=0.5),
-#                     A.RandomRotate90(always_apply=False, p=0.5),
-#                     A.VerticalFlip(always_apply=False, p=0.5), 
-#                     A.HorizontalFlip(always_apply=False, p=0.5)
-#                 ]),
 
-#             ])
         #Apply the trans
         aug=get_aug(trans_color_level)
         augmented = aug(**annotations)
@@ -155,15 +96,7 @@ class  Augment_paper(object):
         bbox=augmented['bboxes']
         bbox = np.array(bbox)
         label=augmented['category_id']
-        #try rotate
-#         if self.cfg.DATA_LOADER.AUGMENTATION_SPATIAL_LEVEL:
-#             aug1 = get_aug(trans_rotate_level)
-#             augmented1 = aug1(**augmented)
-#             img1=augmented1['image']
-#             bbox1=augmented1['bboxes']
-#             bbox1 = np.array(bbox1)
-#             label1=augmented1['category_id']
-            #if rotate fail
+        #When bbox dispearing, just give up this time.
         if bbox.shape[0] == 0: 
             return image, boxes, labels
         else:
