@@ -1,3 +1,18 @@
+'''
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This detector code has been modified by Xiaoyu Zhu for TDT4265 final project.
+*with the referencing of :
+1. Torch official resnet code: https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
+2. ssjatmhmy's Resnet+SSD code (This is unfinished code): https://github.com/ssjatmhmy/pytorch-resnet-ssd/blob/master/resnet_base.py
+
+*Additional Support:
+1. Added the support of DropBlock, with referencing of miguelvr/dropblock (https://github.com/miguelvr/dropblock/blob/master/examples/resnet-cifar10.py)
+*To install it: 'pip install dropblock'
+2. Added the support for ResNest based on Github:zhanghang1989/ResNeSt(https://github.com/zhanghang1989/ResNeSt)
+*To install it: 'pip install resnest --pre'
+
+'''
 import torch
 from torch import nn
 import torch.utils.model_zoo as model_zoo
@@ -47,7 +62,6 @@ def build_backbone(cfg):
                 "https://s3.amazonaws.com/amdegroot-models/vgg16_reducedfc.pth")
             model.init_from_pretrain(state_dict)
     if backbone_name == "resnet":
-        #model = ResNet(cfg)
         depth = cfg.MODEL.BACKBONE.DEPTH
         model_urls = {
             'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -69,12 +83,4 @@ def build_backbone(cfg):
         return model
     if backbone_name == "resnest":
         model = ResNest(cfg,BasicBlock)
-#         if cfg.MODEL.BACKBONE.PRETRAINED:
-#             pretrained_dict = torch.hub.load_state_dict_from_url(resnest_model_urls['resnest50'], progress=True, check_hash=True)
-#             model_dict = model.state_dict()
-#             pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
-#             model_dict.update(pretrained_dict)
-#             model.load_state_dict(model_dict)
-        
-            
         return model
