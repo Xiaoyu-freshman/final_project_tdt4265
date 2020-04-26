@@ -1,3 +1,16 @@
+'''
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This checkpoint.py code has been modified by Xiaoyu Zhu for TDT4265 final project.
+
+*Additional Support:
+1. Added the support for continuing training on TDT4265 Dataset after pre-trained on Waymo Dataset.
+    * when cfg.MODEL.BACKBONE.AFTER_TRAINED = True, the parameters of models pre-trained on Waymo Data can be loaded.
+    details: Line69-75
+   **There is an additional argument 'cfg' added in Line 23.
+   
+
+'''
 import logging
 import os
 import torch
@@ -57,12 +70,11 @@ class CheckPointer:
             return {}
         #modeifed by Xiaoyu to load the pre-trained parameters on waymo-dataset. 7th April 2020
         elif not f and self.after_trained:
-            #self.after_file_dir= "outputs//Res34_19_Apr/Res34_Adam/model_final.pth"#resnet_50_New_augment_12H_1/model_final.pth"
             self.logger.info("Loading pretrained on waymo from {}".format(self.after_file_dir))
             model = self.model
             checkpoint=torch.load(self.after_file_dir, map_location=torch.device("cpu"))
             model.load_state_dict(checkpoint.pop("model"))
-            return {}#checkpoint
+            return {}
         
         
         self.logger.info("Loading checkpoint from {}".format(f))
