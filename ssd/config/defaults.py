@@ -1,3 +1,42 @@
+'''
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This defaults.py code has been modified by Xiaoyu Zhu for TDT4265 final project.
+
+*Additional Support:
+1. Added the support for rectangle shape such as [240,320] ([Height,Weight]).
+    The shape of MODEL.PRIORS.FEATURE_MAPS;
+                 MODEL.PRIORS.STRIDES;
+                 MODEL.PRIORS.MIN_SIZES;
+                 MODEL.PRIORS.MAX_SIZES;
+                 INPUT.IMAGE_SIZE;
+has been changed.
+2. Added the support for importing models pre-trained on ImageNet.
+    Some items have been added: 
+    *MODEL.BACKBONE.PRETRAINED = False 
+    (when its value =True, the detector.py can import models pre-trained on ImageNet)
+3. Added the support for continuing training on TDT4265 Dataset after pre-trained on Waymo Dataset.
+    Some items have been added:
+    *MODEL.BACKBONE.AFTER_TRAINED = False
+    (when its value =True, the checkpoint.py can import models pre-trained on Waymo Data)
+4. Added the support for more choices of Data Augmentaion.
+    Some items have been added:
+    *DATA_LOADER.DATA_AUGMENTATION = 'Naive'
+    (The value of this item can be 'Naive', 'lufficc', 'xiaoyu', 'paper')
+    *DATA_LOADER.AUGMENTATION_WEATHER = False
+    (when its value =True, the Weather Augmentation will be added)
+    *DATA_LOADER.AUGMENTATION_SPATIAL_LEVEL = False
+    (when its value =True, the Spatial-Level Augmentation will be added)
+   **To use the augmentation policy 'xiaoyu' and 'paper', a package called Albumentations has to be installed.
+   (https://github.com/albumentations-team/albumentations)
+     To install: pip install albumentations
+5. Added the support for different optimizer.
+    Some items have been added:
+    *SOLVER.CHOICE = 'SGD'
+    (The value of this item can be 'SGD' and 'Adam')
+    
+'''
+
 from yacs.config import CfgNode as CN
 
 cfg = CN()
@@ -62,16 +101,7 @@ cfg.DATASETS = CN()
 cfg.DATASETS.TRAIN = ()
 # List of the dataset names for testing, as present in pathscfgatalog.py
 cfg.DATASETS.TEST = ()
-cfg.DATASETS.AUG_POLICY = 'v0' 
-'''
-The available
-      options are `v0`, `v1`, `v2`, `v3` and `test`. `v0` is the policy used for
-      all of the results in the paper and was found to achieve the best results
-      on the COCO dataset. `v1`, `v2` and `v3` are additional good policies
-      found on the COCO dataset that have slight variation in what operations
-      were used during the search procedure along with how many operations are
-      applied in parallel to a single image (2 vs 3).
-'''
+
 # -----------------------------------------------------------------------------
 # DataLoader
 # -----------------------------------------------------------------------------
