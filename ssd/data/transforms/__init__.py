@@ -1,3 +1,20 @@
+'''
+
+The comments are created by Xiaoyu Zhu at 26 April.
+*This __init__.py code has been modified by Xiaoyu Zhu for TDT4265 final project.
+*with the referencing of :
+1. Lufficc's SSD code: https://github.com/lufficc/SSD/blob/master/ssd/data/transforms/__init__.py
+2. Albumentations official guide: https://github.com/albumentations-team/albumentations#pypi
+3. Paper: Learning Data Augmentation Strategies for Object Detection
+
+*There are 4 choices of augmentation polices: 
+    1. 'Naive': used when pre-training the final model on Waymo Dataset.
+    2. 'lufficc': borrowed from https://github.com/lufficc/SSD/blob/master/ssd/data/transforms/__init__.py
+    3. 'xiaoyu': A private approach for data augmentation based on the intuition from the paper.
+    4. 'paper': A private way for implementing the polices mentioned in the paper.
+
+'''
+
 from ssd.modeling.box_head.prior_box import PriorBox
 from .target_transform import SSDTargetTransform
 from .transforms import *
